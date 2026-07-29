@@ -23,11 +23,11 @@ public class ClueInteract : MonoBehaviour
                 InventoryManager.Instance.AddItem(clueData, false);
 
                 string[] combinedTexts = new string[] { clueData.openText, clueData.firstClickText };
-                DialogueManager.Instance.ShowTexts(combinedTexts, true);
+                PointClickDialogueManager.Instance.ShowTexts(combinedTexts, true);
             }
             else
             {
-                DialogueManager.Instance.ShowText(clueData.lockedText);
+                PointClickDialogueManager.Instance.ShowText(clueData.lockedText);
             }
             return;
         }
@@ -36,12 +36,12 @@ public class ClueInteract : MonoBehaviour
         if (!isFirstClickDone)
         {
             InventoryManager.Instance.AddItem(clueData, false);
-            DialogueManager.Instance.ShowText(clueData.firstClickText, true);
+            PointClickDialogueManager.Instance.ShowText(clueData.firstClickText, true);
             isFirstClickDone = true;
         }
         else
         {
-            DialogueManager.Instance.ShowText(clueData.secondClickText);
+            PointClickDialogueManager.Instance.ShowText(clueData.secondClickText);
         }
     }
 }

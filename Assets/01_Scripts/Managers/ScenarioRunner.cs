@@ -9,7 +9,7 @@ public class ScenarioRunner : MonoBehaviour
 
     [Header("Dialogue")]
     [SerializeField] private DialogueDatabase dialogueDatabase;
-    [SerializeField] private DialogueManager dialogueManager;
+    [SerializeField] private ChatDialogueManager dialogueManager;
 
     [Header("Choice")]
     [SerializeField] private ChoiceController choiceController;
@@ -36,7 +36,7 @@ public class ScenarioRunner : MonoBehaviour
     {
         if (isRunning)
         {
-            Debug.LogWarning("ÀÌ¹Ì ½Ã³ª¸®¿À°¡ ½ÇÇà ÁßÀÔ´Ï´Ù.");
+            Debug.LogWarning("ï¿½Ì¹ï¿½ ï¿½Ã³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ô´Ï´ï¿½.");
             return;
         }
 
@@ -75,7 +75,7 @@ public class ScenarioRunner : MonoBehaviour
             if (step == null)
             {
                 Debug.LogWarning(
-                    $"{currentStepIndex}¹ø StepÀÌ ºñ¾î ÀÖ½À´Ï´Ù."
+                    $"{currentStepIndex}ï¿½ï¿½ Stepï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Ö½ï¿½ï¿½Ï´ï¿½."
                 );
 
                 currentStepIndex++;
@@ -91,7 +91,7 @@ public class ScenarioRunner : MonoBehaviour
         scenarioCoroutine = null;
 
         Debug.Log(
-            $"½Ã³ª¸®¿À Á¾·á: {scenarioData.scenarioId}"
+            $"ï¿½Ã³ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½: {scenarioData.scenarioId}"
         );
     }
 
@@ -127,7 +127,7 @@ public class ScenarioRunner : MonoBehaviour
 
             default:
                 Debug.LogWarning(
-                    $"Ã³¸®µÇÁö ¾ÊÀº Step Å¸ÀÔ: {step.stepType}"
+                    $"Ã³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Step Å¸ï¿½ï¿½: {step.stepType}"
                 );
                 break;
         }
@@ -167,9 +167,9 @@ public class ScenarioRunner : MonoBehaviour
 
     private void PlayCharacterAnimation(ScenarioStep step)
     {
-        // CharacterController Á¦ÀÛ ÈÄ ÀÌ ºÎºÐÀ» ¿¬°áÇÑ´Ù.
+        // CharacterController ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½Îºï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.
         Debug.Log(
-            $"Ä³¸¯ÅÍ ¾Ö´Ï¸ÞÀÌ¼Ç ¿¹Á¤: " +
+            $"Ä³ï¿½ï¿½ï¿½ï¿½ ï¿½Ö´Ï¸ï¿½ï¿½Ì¼ï¿½ ï¿½ï¿½ï¿½ï¿½: " +
             $"{step.character}, {step.animationTrigger}"
         );
     }
@@ -178,7 +178,7 @@ public class ScenarioRunner : MonoBehaviour
         if (standingController == null)
         {
             Debug.LogError(
-                "StandingController°¡ ¿¬°áµÇÁö ¾Ê¾Ò½À´Ï´Ù."
+                "StandingControllerï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¾Ò½ï¿½ï¿½Ï´ï¿½."
             );
             return;
         }
@@ -191,7 +191,7 @@ public class ScenarioRunner : MonoBehaviour
         if (standingController == null)
         {
             Debug.LogError(
-                "StandingController°¡ ¿¬°áµÇÁö ¾Ê¾Ò½À´Ï´Ù."
+                "StandingControllerï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¾Ò½ï¿½ï¿½Ï´ï¿½."
             );
             return;
         }
@@ -204,7 +204,7 @@ public class ScenarioRunner : MonoBehaviour
         if (scenarioData == null)
         {
             Debug.LogError(
-                "ScenarioRunner¿¡ ScenarioData°¡ ¾ø½À´Ï´Ù."
+                "ScenarioRunnerï¿½ï¿½ ScenarioDataï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½."
             );
             return false;
         }
@@ -212,7 +212,7 @@ public class ScenarioRunner : MonoBehaviour
         if (dialogueDatabase == null)
         {
             Debug.LogError(
-                "ScenarioRunner¿¡ DialogueDatabase°¡ ¿¬°áµÇÁö ¾Ê¾Ò½À´Ï´Ù."
+                "ScenarioRunnerï¿½ï¿½ DialogueDatabaseï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¾Ò½ï¿½ï¿½Ï´ï¿½."
             );
             return false;
         }
@@ -220,7 +220,7 @@ public class ScenarioRunner : MonoBehaviour
         if (dialogueManager == null)
         {
             Debug.LogError(
-                "ScenarioRunner¿¡ DialogueManager°¡ ¿¬°áµÇÁö ¾Ê¾Ò½À´Ï´Ù."
+                "ScenarioRunnerï¿½ï¿½ DialogueManagerï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¾Ò½ï¿½ï¿½Ï´ï¿½."
             );
             return false;
         }
@@ -228,7 +228,7 @@ public class ScenarioRunner : MonoBehaviour
         if (!dialogueDatabase.IsLoaded)
         {
             Debug.LogError(
-                "DialogueDatabase°¡ ¾ÆÁ÷ CSV¸¦ ÀÐÁö ¸øÇß½À´Ï´Ù."
+                "DialogueDatabaseï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ CSVï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ß½ï¿½ï¿½Ï´ï¿½."
             );
             return false;
         }
@@ -240,7 +240,7 @@ public class ScenarioRunner : MonoBehaviour
         if (choiceController == null)
         {
             Debug.LogError(
-                "ChoiceController°¡ ¿¬°áµÇÁö ¾Ê¾Ò½À´Ï´Ù."
+                "ChoiceControllerï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¾Ò½ï¿½ï¿½Ï´ï¿½."
             );
 
             yield break;

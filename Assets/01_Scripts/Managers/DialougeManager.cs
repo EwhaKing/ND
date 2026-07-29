@@ -4,7 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class DialogueManager : MonoBehaviour
+public class ChatDialogueManager : MonoBehaviour
 {
     [Serializable]
     public class DialogueLine
@@ -66,7 +66,7 @@ public class DialogueManager : MonoBehaviour
     {
         if (lines == null || lines.Length == 0)
         {
-            Debug.LogWarning("Ãâ·ÂÇÒ ´ë»ç°¡ ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ç°¡ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.");
             finishedCallback?.Invoke();
             return;
         }
@@ -101,14 +101,14 @@ public class DialogueManager : MonoBehaviour
 
     public void OnDialogueClicked()
     {
-        // Å¸ÀÌÇÎ Áß Å¬¸¯ÇÏ¸é ÇöÀç ¹®ÀåÀ» Áï½Ã ¿Ï¼ºÇÑ´Ù.
+        // Å¸ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½Ï¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Ï¼ï¿½ï¿½Ñ´ï¿½.
         if (isTyping)
         {
             CompleteTypingImmediately();
             return;
         }
 
-        // ¹®Àå Ãâ·Â Á÷ÈÄ ¿¬¼Ó Å¬¸¯ ¹æÁö
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         if (!canProceed)
         {
             return;
@@ -129,7 +129,7 @@ public class DialogueManager : MonoBehaviour
 
         DialogueLine currentLine = currentLines[currentLineIndex];
 
-        // È­ÀÚ°¡ ¾øÀ¸¸é ºó ¹®ÀÚ¿­À» ³Ö´Â´Ù.
+        // È­ï¿½Ú°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½Ú¿ï¿½ï¿½ï¿½ ï¿½Ö´Â´ï¿½.
         speakerText.text = currentLine.speaker ?? string.Empty;
 
         currentFullText = currentLine.dialogue ?? string.Empty;
