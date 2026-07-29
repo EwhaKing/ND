@@ -28,7 +28,7 @@ public class StandingController : MonoBehaviour
             currentStands.Add(stands[i]);
 
             images[i].sprite = stands[i].sprite;
-            images[i].rectTransform.sizeDelta = new Vector2(650f, 1100f);
+            images[i].rectTransform.sizeDelta = new Vector2(500f, 800f);
             images[i].color = Color.white;
 
             if (stands.Length > 1)
