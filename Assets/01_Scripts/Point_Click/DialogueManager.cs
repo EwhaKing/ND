@@ -2,9 +2,9 @@ using System.Collections.Generic; // Queue를 쓰기 위해 필요합니다.
 using UnityEngine;
 using TMPro;
 
-public class DialogueManager : MonoBehaviour
+public class PointClickDialogueManager : MonoBehaviour
 {
-    public static DialogueManager Instance;
+    public static PointClickDialogueManager Instance;
 
     [Header("UI 컴포넌트 연결")]
     public GameObject dialoguePanel;
