@@ -132,19 +132,7 @@ public class ScenarioDataEditor : Editor
                 break;
 
             case ScenarioStepType.StandingShow:
-                step.standingSprite =
-                    (Sprite)EditorGUILayout.ObjectField(
-                        "Standing Sprite",
-                        step.standingSprite,
-                        typeof(Sprite),
-                        false
-                    );
-
-                step.standingPosition =
-                    (StandingPosition)EditorGUILayout.EnumPopup(
-                        "Position",
-                        step.standingPosition
-                    );
+                DrawStandingFields(step);
                 break;
 
             case ScenarioStepType.StandingHide:
@@ -152,6 +140,10 @@ public class ScenarioDataEditor : Editor
                     "ÇöÀç Ç¥½Ã ÁßÀÎ ½ºÅÄµùÀ» ¼û±é´Ï´Ù.",
                     MessageType.Info
                 );
+                break;
+
+            case ScenarioStepType.Choice:
+                DrawChoices(step);
                 break;
         }
     }
@@ -176,5 +168,110 @@ public class ScenarioDataEditor : Editor
 
         EditorUtility.SetDirty(scenarioData);
         serializedObject.Update();
+    }
+    private void DrawChoices(ScenarioStep step)
+    {
+        EditorGUILayout.LabelField(
+            "Choices",
+            EditorStyles.boldLabel
+        );
+
+        for (int i = 0; i < step.choices.Count; i++)
+        {
+            EditorGUILayout.BeginVertical("box");
+
+            ChoiceData choice = step.choices[i];
+
+            choice.choiceText =
+                EditorGUILayout.TextField(
+                    "Button Text",
+                    choice.choiceText
+                );
+
+            choice.targetScene =
+                EditorGUILayout.TextField(
+                    "Target Scene",
+                    choice.targetScene
+                );
+
+            if (GUILayout.Button("Del"))
+            {
+                step.choices.RemoveAt(i);
+                break;
+            }
+
+            EditorGUILayout.EndVertical();
+        }
+
+        if (GUILayout.Button("Add"))
+        {
+            step.choices.Add(new ChoiceData());
+        }
+    }
+    private void DrawStandingFields(ScenarioStep step)
+    {
+        EditorGUILayout.LabelField(
+            "Standing Characters",
+            EditorStyles.boldLabel
+        );
+
+        if (step.stands == null)
+        {
+            step.stands = new StandStep[0];
+        }
+
+        int newSize = EditorGUILayout.IntField(
+            "Size",
+            step.stands.Length
+        );
+
+        newSize = Mathf.Max(0, newSize);
+
+        if (newSize != step.stands.Length)
+        {
+            System.Array.Resize(
+                ref step.stands,
+                newSize
+            );
+
+            for (int i = 0; i < step.stands.Length; i++)
+            {
+                if (step.stands[i] == null)
+                {
+                    step.stands[i] = new StandStep();
+                }
+            }
+        }
+
+        for (int i = 0; i < step.stands.Length; i++)
+        {
+            if (step.stands[i] == null)
+            {
+                step.stands[i] = new StandStep();
+            }
+
+            EditorGUILayout.BeginVertical("box");
+
+            EditorGUILayout.LabelField(
+                $"Standing {i + 1}",
+                EditorStyles.boldLabel
+            );
+
+            step.stands[i].standName =
+                EditorGUILayout.TextField(
+                    "Stand Name",
+                    step.stands[i].standName
+                );
+
+            step.stands[i].sprite =
+                (Sprite)EditorGUILayout.ObjectField(
+                    "Sprite",
+                    step.stands[i].sprite,
+                    typeof(Sprite),
+                    false
+                );
+
+            EditorGUILayout.EndVertical();
+        }
     }
 }

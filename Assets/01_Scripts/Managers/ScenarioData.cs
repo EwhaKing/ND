@@ -8,20 +8,14 @@ public enum ScenarioStepType
     Wait,
     CharacterAnimation,
     StandingShow,
-    StandingHide
+    StandingHide,
+    Choice
 }
 
 public enum CharacterType
 {
     None,
     Tester
-}
-
-public enum StandingPosition
-{
-    Left,
-    Center,
-    Right
 }
 
 [Serializable]
@@ -41,8 +35,26 @@ public class ScenarioStep
     public string animationTrigger;
 
     [Header("Standing")]
-    public Sprite standingSprite;
-    public StandingPosition standingPosition;
+    public StandStep[] stands;
+
+    [Header("Choice")]
+    public List<ChoiceData> choices = new();
+}
+[Serializable]
+public class ChoiceData
+{
+    public string choiceText;
+
+    [Tooltip("버튼을 눌렀을 때 이동할 씬 이름")]
+    public string targetScene;
+}
+[Serializable]
+public class StandStep
+{
+    [Tooltip("CSV의 speaker 이름과 같아야 합니다.")]
+    public string standName;
+
+    public Sprite sprite;
 }
 
 [CreateAssetMenu(

@@ -11,9 +11,16 @@ public class ScenarioRunner : MonoBehaviour
     [SerializeField] private DialogueDatabase dialogueDatabase;
     [SerializeField] private DialogueManager dialogueManager;
 
+    [Header("Choice")]
+    [SerializeField] private ChoiceController choiceController;
+
+    [Header("Standing")]
+    [SerializeField] private StandingController standingController;
+
     private int currentStepIndex;
     private bool isRunning;
     private bool isWaitingForDialogue;
+    private bool isWaitingForChoice;
 
     private Coroutine scenarioCoroutine;
 
@@ -114,6 +121,10 @@ public class ScenarioRunner : MonoBehaviour
                 HideStanding();
                 break;
 
+            case ScenarioStepType.Choice:
+                yield return PlayChoice(step);
+                break;
+
             default:
                 Debug.LogWarning(
                     $"처리되지 않은 Step 타입: {step.stepType}"
@@ -121,7 +132,6 @@ public class ScenarioRunner : MonoBehaviour
                 break;
         }
     }
-
     private IEnumerator PlayDialogue(string dialogueId)
     {
         DialogueDatabase.DialogueEntry entry =
@@ -130,6 +140,11 @@ public class ScenarioRunner : MonoBehaviour
         if (entry == null)
         {
             yield break;
+        }
+
+        if (standingController != null)
+        {
+            standingController.SetColor(entry.speaker);
         }
 
         isWaitingForDialogue = true;
@@ -158,20 +173,30 @@ public class ScenarioRunner : MonoBehaviour
             $"{step.character}, {step.animationTrigger}"
         );
     }
-
     private void ShowStanding(ScenarioStep step)
     {
-        // StandingController 제작 후 이 부분을 연결한다.
-        Debug.Log(
-            $"스탠딩 표시 예정: " +
-            $"{step.standingPosition}, {step.standingSprite?.name}"
-        );
+        if (standingController == null)
+        {
+            Debug.LogError(
+                "StandingController가 연결되지 않았습니다."
+            );
+            return;
+        }
+
+        standingController.SetSprite(step.stands);
     }
 
     private void HideStanding()
     {
-        // StandingController 제작 후 이 부분을 연결한다.
-        Debug.Log("스탠딩 숨김 예정");
+        if (standingController == null)
+        {
+            Debug.LogError(
+                "StandingController가 연결되지 않았습니다."
+            );
+            return;
+        }
+
+        standingController.Hide();
     }
 
     private bool ValidateReferences()
@@ -210,4 +235,31 @@ public class ScenarioRunner : MonoBehaviour
 
         return true;
     }
+    private IEnumerator PlayChoice(ScenarioStep step)
+    {
+        if (choiceController == null)
+        {
+            Debug.LogError(
+                "ChoiceController가 연결되지 않았습니다."
+            );
+
+            yield break;
+        }
+
+        isWaitingForChoice = true;
+
+        choiceController.ShowChoices(
+            step.choices,
+            () =>
+            {
+                isWaitingForChoice = false;
+            }
+        );
+
+        yield return new WaitUntil(
+            () => !isWaitingForChoice
+        );
+    }
 }
+
+
