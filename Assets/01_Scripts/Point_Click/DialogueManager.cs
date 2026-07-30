@@ -1,4 +1,4 @@
-using System.Collections.Generic; // Queue를 쓰기 위해 필요합니다.
+using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
@@ -79,6 +79,12 @@ public class PointClickDialogueManager : MonoBehaviour
         if (pendingInventoryRefresh)
         {
             InventoryManager.Instance.UpdateInventoryUI();
+
+            if (InvestigationManager.Instance != null)
+            {
+                InvestigationManager.Instance.UpdateUI();
+            }
+
             pendingInventoryRefresh = false;
         }
     }

@@ -29,6 +29,11 @@ public class InventoryManager : MonoBehaviour
         if (!acquiredItems.Contains(itemData))
         {
             acquiredItems.Add(itemData);
+
+            if (InvestigationManager.Instance != null)
+            {
+                InvestigationManager.Instance.UpdateProgress(itemData, updateUI);
+            }
             
             if (updateUI)
             {
@@ -50,7 +55,10 @@ public class InventoryManager : MonoBehaviour
     // 인벤토리 UI 업데이트 기능
     public void UpdateInventoryUI()
     {
-        if (slotIcons == null || slotIcons.Length == 0) return;
+        if (slotIcons == null || slotIcons.Length == 0) 
+        {
+            return;
+        }
 
         for (int i = 0; i < slotIcons.Length; i++)
         {
