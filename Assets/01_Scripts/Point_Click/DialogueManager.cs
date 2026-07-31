@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using System;
 
 public class PointClickDialogueManager : MonoBehaviour
 {
@@ -11,7 +12,8 @@ public class PointClickDialogueManager : MonoBehaviour
     public TextMeshProUGUI dialogueText;
 
     private Queue<string> sentences = new Queue<string>(); // 대사 저장용 큐
-    private bool pendingInventoryRefresh = false;
+    private bool pendingInventoryRefresh = false; // 인벤토리 UI 갱신 여부 확인용 플래그
+    public Action onDialogueClosedCallback = null; // 대화창이 닫힐 때 호출될 콜백
 
     private void Awake()
     {
@@ -86,6 +88,12 @@ public class PointClickDialogueManager : MonoBehaviour
             }
 
             pendingInventoryRefresh = false;
+        }
+
+        if (onDialogueClosedCallback != null)
+        {
+            onDialogueClosedCallback.Invoke();
+            onDialogueClosedCallback = null;
         }
     }
 }
