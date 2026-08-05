@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class ChoiceController : MonoBehaviour
@@ -13,11 +12,11 @@ public class ChoiceController : MonoBehaviour
 
     public void ShowChoices(
         List<ChoiceData> choices,
-        Action onChoiceSelected)
+        Action<ChoiceData> onChoiceSelected)
     {
         ClearButtons();
 
-        if (choices == null || choices.Count == 0)
+            if (choices == null || choices.Count == 0)
         {
             Debug.LogWarning("표시할 선택지가 없습니다.");
             return;
@@ -30,8 +29,8 @@ public class ChoiceController : MonoBehaviour
     }
 
     private void CreateChoiceButton(
-        ChoiceData choice,
-        Action onChoiceSelected)
+    ChoiceData choice,
+    Action<ChoiceData> onChoiceSelected)
     {
         Button button = Instantiate(
             choiceButtonPrefab,
@@ -48,29 +47,14 @@ public class ChoiceController : MonoBehaviour
 
         button.onClick.AddListener(() =>
         {
-            onChoiceSelected?.Invoke();
+            Debug.Log($"선택지 선택: {choice.choiceText}");
 
-            LoadTargetScene(choice.targetScene);
+            ClearButtons();
+            onChoiceSelected?.Invoke(choice);
         });
 
         createdButtons.Add(button);
     }
-
-    private void LoadTargetScene(string targetScene)
-    {
-        if (string.IsNullOrWhiteSpace(targetScene))
-        {
-            Debug.LogError(
-                "이동할 Scene이 설정되지 않았습니다."
-            );
-            return;
-        }
-
-        ClearButtons();
-
-        SceneManager.LoadScene(targetScene);
-    }
-
     public void ClearButtons()
     {
         foreach (Button button in createdButtons)

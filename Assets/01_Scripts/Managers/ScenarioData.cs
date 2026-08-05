@@ -6,16 +6,21 @@ public enum ScenarioStepType
 {
     Dialogue,
     Wait,
-    CharacterAnimation,
     StandingShow,
     StandingHide,
     Choice
 }
-
-public enum CharacterType
+public enum ChoiceActionType
 {
-    None,
-    Tester
+    NextStep,
+    ReactionThenNext,
+    LoadScene
+}
+public enum ReactionStepType
+{
+    Dialogue,
+    StandingChange,
+    Wait
 }
 
 [Serializable]
@@ -30,10 +35,6 @@ public class ScenarioStep
     [Min(0f)]
     public float waitSeconds = 1f;
 
-    [Header("Character Animation")]
-    public CharacterType character;
-    public string animationTrigger;
-
     [Header("Standing")]
     public StandStep[] stands;
 
@@ -45,7 +46,13 @@ public class ChoiceData
 {
     public string choiceText;
 
-    [Tooltip("버튼을 눌렀을 때 이동할 씬 이름")]
+    public ChoiceActionType actionType;
+
+    [Tooltip("ReactionThenNext일 때 실행할 짧은 반응")]
+    public List<ReactionStep> reactionSteps =
+        new List<ReactionStep>();
+
+    [Tooltip("LoadScene일 때 이동할 씬")]
     public string targetScene;
 }
 [Serializable]
@@ -55,6 +62,23 @@ public class StandStep
     public string standName;
 
     public Sprite sprite;
+}
+
+[Serializable]
+public class ReactionStep
+{
+    public ReactionStepType stepType;
+
+    [Header("Dialogue")]
+    public string dialogueId;
+
+    [Header("Standing")]
+    public string standName;
+    public Sprite standingSprite;
+
+    [Header("Wait")]
+    [Min(0f)]
+    public float waitSeconds = 0.5f;
 }
 
 [CreateAssetMenu(

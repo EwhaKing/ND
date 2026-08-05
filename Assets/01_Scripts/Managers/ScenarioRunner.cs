@@ -1,5 +1,7 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class ScenarioRunner : MonoBehaviour
 {
@@ -21,7 +23,8 @@ public class ScenarioRunner : MonoBehaviour
     private bool isRunning;
     private bool isWaitingForDialogue;
     private bool isWaitingForChoice;
-
+    private bool sceneLoadRequested;
+    private ChoiceData selectedChoice;
     private Coroutine scenarioCoroutine;
 
     private void Start()
@@ -109,10 +112,6 @@ public class ScenarioRunner : MonoBehaviour
                 );
                 break;
 
-            case ScenarioStepType.CharacterAnimation:
-                PlayCharacterAnimation(step);
-                break;
-
             case ScenarioStepType.StandingShow:
                 ShowStanding(step);
                 break;
@@ -165,14 +164,6 @@ public class ScenarioRunner : MonoBehaviour
         isWaitingForDialogue = false;
     }
 
-    private void PlayCharacterAnimation(ScenarioStep step)
-    {
-        // CharacterController ���� �� �� �κ��� �����Ѵ�.
-        Debug.Log(
-            $"ĳ���� �ִϸ��̼� ����: " +
-            $"{step.character}, {step.animationTrigger}"
-        );
-    }
     private void ShowStanding(ScenarioStep step)
     {
         if (standingController == null)
@@ -199,6 +190,159 @@ public class ScenarioRunner : MonoBehaviour
         standingController.Hide();
     }
 
+    private IEnumerator ExecuteChoiceAction(
+    ChoiceData choice)
+    {
+        switch (choice.actionType)
+        {
+            case ChoiceActionType.NextStep:
+                yield break;
+
+            case ChoiceActionType.ReactionThenNext:
+                yield return ExecuteReactionSteps(
+                    choice.reactionSteps
+                );
+                break;
+
+            case ChoiceActionType.LoadScene:
+                LoadTargetScene(choice.targetScene);
+                break;
+        }
+    }
+    private void LoadTargetScene(string targetScene)
+    {
+        if (string.IsNullOrWhiteSpace(targetScene))
+        {
+            Debug.LogError(
+                "이동할 Scene이 설정되지 않았습니다."
+            );
+            return;
+        }
+
+        sceneLoadRequested = true;
+
+        SceneManager.LoadScene(targetScene);
+    }
+    private IEnumerator ExecuteReactionSteps(
+    List<ReactionStep> reactionSteps)
+    {
+        if (reactionSteps == null ||
+            reactionSteps.Count == 0)
+        {
+            Debug.LogWarning(
+                "선택지의 Reaction Steps가 비어 있습니다."
+            );
+
+            yield break;
+        }
+
+        foreach (ReactionStep reactionStep
+                 in reactionSteps)
+        {
+            if (reactionStep == null)
+            {
+                continue;
+            }
+
+            switch (reactionStep.stepType)
+            {
+                case ReactionStepType.Dialogue:
+                    Debug.Log(
+                        $"리액션 대사 실행: {reactionStep.dialogueId}"
+                    );
+
+                    yield return PlayDialogue(
+                        reactionStep.dialogueId
+                    );
+                    break;
+
+                case ReactionStepType.StandingChange:
+                    standingController.ChangeSprite(
+                        reactionStep.standName,
+                        reactionStep.standingSprite
+                    );
+                    break;
+
+                case ReactionStepType.Wait:
+                    yield return new WaitForSecondsRealtime(
+                        Mathf.Max(
+                            0f,
+                            reactionStep.waitSeconds
+                        )
+                    );
+                    break;
+            }
+        }
+    }
+    private IEnumerator PlayChoice(ScenarioStep step)
+    {
+        if (choiceController == null)
+        {
+            Debug.LogError("ChoiceController가 연결되지 않았습니다.");
+
+            yield break;
+        }
+
+        if (step.choices == null ||
+            step.choices.Count == 0)
+        {
+            Debug.LogWarning("Choice Step에 선택지가 없습니다.");
+            yield break;
+        }
+
+        selectedChoice = null;
+        isWaitingForChoice = true;
+
+        choiceController.ShowChoices(
+            step.choices,
+            OnChoiceSelected
+        );
+
+        // 플레이어가 선택지를 누를 때까지 대기
+        yield return new WaitUntil(
+            () => !isWaitingForChoice
+        );
+
+        if (selectedChoice == null)
+        {
+            Debug.LogError("선택한 ChoiceData를 전달받지 못했습니다.");
+            yield break;
+        }
+
+        // 선택한 항목의 Reaction Steps 실행
+        yield return ExecuteChoiceAction(
+            selectedChoice
+        );
+
+        selectedChoice = null;
+    }
+    private void OnChoiceSelected(ChoiceData choice)
+    {
+        selectedChoice = choice;
+        isWaitingForChoice = false;
+    }
+    private IEnumerator PlayScenario(
+    ScenarioData targetScenario)
+    {
+        sceneLoadRequested = false;
+
+        for (int i = 0; i < targetScenario.steps.Count; i++)
+        {
+            ScenarioStep step = targetScenario.steps[i];
+
+            if (step == null)
+            {
+                continue;
+            }
+
+            yield return ExecuteStep(step);
+
+            if (sceneLoadRequested)
+            {
+                yield break;
+            }
+        }
+    }
     private bool ValidateReferences()
     {
         if (scenarioData == null)
@@ -234,32 +378,7 @@ public class ScenarioRunner : MonoBehaviour
         }
 
         return true;
-    }
-    private IEnumerator PlayChoice(ScenarioStep step)
-    {
-        if (choiceController == null)
-        {
-            Debug.LogError(
-                "ChoiceController�� ������� �ʾҽ��ϴ�."
-            );
-
-            yield break;
         }
-
-        isWaitingForChoice = true;
-
-        choiceController.ShowChoices(
-            step.choices,
-            () =>
-            {
-                isWaitingForChoice = false;
-            }
-        );
-
-        yield return new WaitUntil(
-            () => !isWaitingForChoice
-        );
     }
-}
 
 

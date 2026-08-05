@@ -94,4 +94,43 @@ public class StandingController : MonoBehaviour
 
         currentStands.Clear();
     }
+    public void ChangeSprite(
+    string standName,
+    Sprite newSprite)
+    {
+        if (string.IsNullOrWhiteSpace(standName))
+        {
+            Debug.LogError("변경할 캐릭터 이름이 비어 있습니다.");
+            return;
+        }
+
+        if (newSprite == null)
+        {
+            Debug.LogError(
+                $"{standName}에게 적용할 Sprite가 없습니다."
+            );
+            return;
+        }
+
+        for (int i = 0; i < currentStands.Count; i++)
+        {
+            if (currentStands[i].standName != standName)
+            {
+                continue;
+            }
+
+            currentStands[i].sprite = newSprite;
+            images[i].sprite = newSprite;
+
+            Debug.Log(
+                $"스탠딩 표정 변경: {standName} → {newSprite.name}"
+            );
+
+            return;
+        }
+
+        Debug.LogWarning(
+            $"현재 표시 중인 스탠딩에서 찾지 못했습니다: {standName}"
+        );
+    }
 }
