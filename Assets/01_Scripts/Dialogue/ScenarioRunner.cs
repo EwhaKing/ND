@@ -3,6 +3,36 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+/// <summary>
+/// ScenarioRunner
+///
+/// 담당:
+/// - ScenarioData에 등록된 Step들을 순서대로 실행
+/// - Dialogue, Wait, StandingShow, StandingHide, Choice 타입의 시나리오 진행을 처리
+/// - Dialogue Step에서는 DialogueDatabase에서 dialogueId에 맞는 대사를 가져와 ChatDialogueManager로 출력
+/// - Choice Step에서는 ChoiceController를 통해 선택지를 출력하고, 선택 결과에 따라 다음 진행을 처리
+/// - 선택지 이후 ReactionStep을 실행하여 짧은 대사, 스탠딩 변경, 대기 연출을 처리
+/// - LoadScene 액션을 통해 특정 씬으로 이동 가능
+///
+/// 사용 위치:
+/// - 대화/연출 시나리오를 실행할 씬의 ScenarioRunner 오브젝트에 부착
+/// - 챕터 도입 대화, 조사 전후 대화, 선택지 대화 흐름을 실행하는 데 사용
+///
+/// 연결:
+/// - ScenarioData의 steps를 읽어 시나리오 흐름을 실행
+/// - DialogueDatabase에서 dialogueId에 해당하는 speaker/dialogue 데이터를 가져옴
+/// - ChatDialogueManager를 통해 실제 대화창 UI를 출력
+/// - ChoiceController를 통해 선택지 버튼을 생성하고 선택 결과를 전달 받음
+/// - StandingController를 통해 캐릭터 스탠딩 표시, 숨김, 표정/스프라이트 변경을 처리
+///
+/// TODO:
+/// - LoadScene 방식 대신 GameFlowManager / ChapterManager와 연결하여 GameState 전환 방식으로 확장 검토
+/// - 선택지 결과가 GameFlagManager에 저장되도록 연결 필요
+/// - Narration / CG / Command 타입 Step 추가 시 ExecuteStep 분기 확장 필요
+/// - 시나리오 종료 후 다음 게임 상태로 넘어가는 콜백 구조 추가 필요
+/// 
+/// - 한글 깨짐이 있는 Debug 문자열 정리 필요
+/// </summary>
 public class ScenarioRunner : MonoBehaviour
 {
     [Header("Scenario")]
@@ -378,7 +408,7 @@ public class ScenarioRunner : MonoBehaviour
         }
 
         return true;
-        }
     }
+}
 
 

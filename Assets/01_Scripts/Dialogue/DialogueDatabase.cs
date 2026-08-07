@@ -3,6 +3,30 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 
+/// <summary>
+/// DialogueDatabase
+///
+/// 담당:
+/// - CSV 파일에 작성된 대화 데이터를 읽어와 ID 기반 Dictionary로 저장
+/// - dialogueId를 통해 화자 이름과 대사 내용을 조회할 수 있도록 관리
+/// - 따옴표가 포함된 CSV, 쉼표가 포함된 대사, 빈 줄 등을 처리하는 기본 CSV 파서를 포함
+///
+/// 사용 위치:
+/// - 대화 데이터베이스 역할을 하는 오브젝트에 부착
+/// - ScenarioRunner가 dialogueId를 기반으로 실제 대사 내용을 가져올 때 사용
+///
+/// 연결:
+/// - ScenarioData의 dialogueId와 연결
+/// - ChatDialogueManager에 전달할 speaker/dialogue 데이터 제공
+/// - 추후 구글 스프레드시트에서 내려받은 CSV 데이터와 연결 가능
+///
+/// TODO:
+/// - Type 컬럼을 추가하여 Dialogue / Narration / CG / Command 타입 구분 지원
+/// - CG ID, Effect, Wait, Standing, Position, Expression 등 추가 컬럼 파싱 지원
+/// - 구글 스프레드시트 연동 시 CSV 갱신/로드 방식 정리
+/// 
+/// - 한글 깨짐이 있는 Debug 문자열 정리 필요
+/// </summary>
 public class DialogueDatabase : MonoBehaviour
 {
     [Serializable]
@@ -29,7 +53,7 @@ public class DialogueDatabase : MonoBehaviour
     {
         if (string.IsNullOrWhiteSpace(id))
         {
-            Debug.LogError("��� ID�� ��� �ֽ��ϴ�.");
+            Debug.LogError("��� ID�� ��� �ֽ��ϴ�.");
             return null;
         }
 
@@ -38,7 +62,7 @@ public class DialogueDatabase : MonoBehaviour
             return entry;
         }
 
-        Debug.LogError($"CSV���� ��� ID�� ã�� ���߽��ϴ�: {id}");
+        Debug.LogError($"CSV���� ��� ID�� ã�� ���߽��ϴ�: {id}");
         return null;
     }
 
@@ -57,7 +81,7 @@ public class DialogueDatabase : MonoBehaviour
         if (dialogueCsv == null)
         {
             Debug.LogError(
-                "DialogueDatabase�� CSV ������ ������� �ʾҽ��ϴ�."
+                "DialogueDatabase�� CSV ������ ������� �ʾҽ��ϴ�."
             );
             return;
         }
@@ -67,12 +91,12 @@ public class DialogueDatabase : MonoBehaviour
         if (rows.Count <= 1)
         {
             Debug.LogError(
-                $"CSV�� ��� �����Ͱ� �����ϴ�: {dialogueCsv.name}"
+                $"CSV�� ��� �����Ͱ� �����ϴ�: {dialogueCsv.name}"
             );
             return;
         }
 
-        // ù ��° ���� id,speaker,dialogue ����̹Ƿ� �ǳʶڴ�.
+        // ù ��° ���� id,speaker,dialogue ����̹Ƿ� �ǳʶڴ�.
         for (int i = 1; i < rows.Count; i++)
         {
             string[] row = rows[i];
@@ -80,7 +104,7 @@ public class DialogueDatabase : MonoBehaviour
             if (row.Length < 3)
             {
                 Debug.LogWarning(
-                    $"{dialogueCsv.name}�� {i + 1}�� �� ������ �����մϴ�."
+                    $"{dialogueCsv.name}�� {i + 1}�� �� ������ �����մϴ�."
                 );
                 continue;
             }
@@ -92,7 +116,7 @@ public class DialogueDatabase : MonoBehaviour
             if (string.IsNullOrWhiteSpace(id))
             {
                 Debug.LogWarning(
-                    $"{dialogueCsv.name}�� {i + 1}�� ID�� ��� �ֽ��ϴ�."
+                    $"{dialogueCsv.name}�� {i + 1}�� ID�� ��� �ֽ��ϴ�."
                 );
                 continue;
             }
@@ -100,7 +124,7 @@ public class DialogueDatabase : MonoBehaviour
             if (table.ContainsKey(id))
             {
                 Debug.LogError(
-                    $"�ߺ��� ��� ID�� �ֽ��ϴ�: {id}"
+                    $"�ߺ��� ��� ID�� �ֽ��ϴ�: {id}"
                 );
                 continue;
             }
@@ -119,7 +143,7 @@ public class DialogueDatabase : MonoBehaviour
         IsLoaded = true;
 
         Debug.Log(
-            $"��� CSV �ε� �Ϸ�: {table.Count}��"
+            $"��� CSV �ε� �Ϸ�: {table.Count}��"
         );
     }
 
