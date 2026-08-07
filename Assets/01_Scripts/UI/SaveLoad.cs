@@ -5,6 +5,34 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// SaveLoad
+///
+/// 담당:
+/// - 저장/불러오기 패널의 UI를 관리
+/// - SaveLoadType에 따라 패널을 저장 모드 또는 불러오기 모드로 초기화
+/// - 저장 슬롯의 날짜, 챕터 텍스트, 썸네일 이미지, 버튼 상태를 설정
+/// - 저장 시 현재 날짜를 PlayerPrefs에 저장
+/// - 저장 슬롯에 연결된 캡처 이미지를 로컬 경로에서 불러와 슬롯 썸네일로 표시
+///
+/// 사용 위치:
+/// - SaveLoad 패널 프리팹에 붙여 사용
+/// - InGame에서 SaveLoad 프리팹을 생성한 뒤 Initalize()를 호출
+///
+/// 연결:
+/// - InGame에서 저장/불러오기 모드로 패널을 생성
+/// - PlayerPrefs를 통해 저장 날짜와 저장 이미지 경로를 읽고 씀
+/// - 저장 이미지 파일은 Application.persistentDataPath/SaveImages 경로에서 불러옴
+///
+/// TODO:
+/// - Initalize 오타를 Initialize로 수정 검토
+/// - 저장 시 scenarioIndex, branchIndex 등 실제 게임 진행 데이터 저장 기능 연결 필요
+/// - Load 모드에서 저장 데이터를 실제로 불러오는 기능 추가 필요
+/// - 기존 저장 슬롯을 덮어쓸 수 있는지 정책 정리 필요
+/// - 저장 슬롯에 챕터명/시나리오 정보를 표시하도록 Chapter 텍스트 저장 추가
+/// - PlayerPrefs.Save() 호출 여부 검토
+/// - 저장 이미지가 없을 때 기본 이미지/빈 슬롯 상태로 초기화하는 처리 추가
+/// </summary>
 public enum SaveLoadType
 {
     Save,

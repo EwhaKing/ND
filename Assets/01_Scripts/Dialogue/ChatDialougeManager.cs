@@ -4,6 +4,30 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// ChatDialogueManager
+///
+/// 담당:
+/// - 대화창 UI의 화자 이름, 대사 텍스트, 다음 표시 아이콘을 제어
+/// - DialogueLine 배열을 받아 순서대로 대사를 출력
+/// - 모든 대사가 끝나면 대화창을 비활성화하고 완료 콜백을 호출.
+///
+/// 사용 위치:
+/// - 대화창 UI 오브젝트에 부착
+/// - 일반 대화, 조사 중 짧은 대화, 선택지 이후 반응 대사 등에 공통으로 사용
+///
+/// 연결:
+/// - ScenarioRunner에서 대화 Step을 실행할 때 호출될 수 있음
+/// - DialogueDatabase에서 가져온 speaker/dialogue 데이터를 출력하는 역할로 확장 가능
+/// - StandingController, ChoiceController와 함께 비주얼 노벨식 대화 연출 구성
+///
+/// TODO:
+/// - Narration 타입일 때, 지문만 출력하는 기능 추가
+/// - CG 타입일 때 CG 이미지와 대화창을 함께 출력하는 기능 추가
+/// - 대사 사이 Wait, Fade, Shake 등 연출 명령과의 연결 추가
+/// 
+/// - 한글 깨짐이 있는 Debug 문자열 정리 필요
+/// </summary>
 public class ChatDialogueManager : MonoBehaviour
 {
     [Serializable]
