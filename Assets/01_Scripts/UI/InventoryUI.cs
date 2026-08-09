@@ -16,7 +16,7 @@ using TMPro;
 ///
 /// 연결:
 /// - ItemSlot에서 전달한 ITEM_OBJ 데이터를 사용
-/// - InventoryManagerUI1 또는 InventoryWindowController에서 HideDescription()을 호출하여 설명창을 초기화
+/// - InventoryPanelController 또는 InventoryWindowController에서 HideDescription()을 호출하여 설명창을 초기화
 ///
 /// TODO:
 /// - ITEM_OBJ와 ClueData가 둘 다 존재하므로 아이템/단서 데이터 구조 통합 여부 검토
@@ -25,6 +25,8 @@ using TMPro;
 /// - 아이템 이름, 아이콘, 획득 조건 등 추가 정보 표시 기능 확장 검토
 /// - Singleton 구조 유지 여부 검토
 /// </summary>
+/// 
+
 public class InventoryUI : MonoBehaviour
 {
     public static InventoryUI Instance;
@@ -61,6 +63,6 @@ public class InventoryUI : MonoBehaviour
     public void HideDescription()
     {
         descriptionPanel.SetActive(false);
-        currentItem = null; // ← 이게 핵심: 선택된 아이템 정보도 같이 초기화
+        currentItem = null; // 선택된 아이템 정보도 같이 초기화
     }
 }

@@ -20,10 +20,9 @@ using UnityEngine.SceneManagement;
 /// 
 /// TODO:
 /// - GameStart()에서 이동하는 씬 이름을 ChatScene 하드코딩 대신 상수 또는 GameFlowManager로 관리 검토
-/// - OpenCollectionPopup / CloseCollectionPopup에서 collectionPopup이 아닌 settingPopup을 사용하고 있는 부분 수정 필요
-/// - Quit Game 버튼 기능 추가 검토
 /// - Continue 버튼과 SaveLoad.Load 기능 연결 필요
 /// </summary>
+
 public class Intro : MonoBehaviour
 {
     [SerializeField] private Fade fade;
@@ -53,28 +52,32 @@ public class Intro : MonoBehaviour
         }
     }
 
-    // ***
-    // 여기 왜 둘 다 settingPopup을 열고 닫는지 확인 필요
 
     public void OpenCollectionPopup()
     {
-        if (settingPopup != null)
+        if (collectionPopup != null)
         {
-            settingPopup.SetActive(true);
+            collectionPopup.SetActive(true);
         }
     }
 
-    // 설정 팝업 닫기 (X 버튼용)
+    // 도감 팝업 닫기 (X 버튼용)
     public void CloseCollectionPopup()
     {
-        if (settingPopup != null)
+        if (collectionPopup != null)
         {
-            settingPopup.SetActive(false);
+            collectionPopup.SetActive(false);
         }
     }
 
-
-
-
+    /// 게임종료. 전처리기를 이용해 에디터 아닐때 종료.
+    public void GameExit()
+    {
+        #if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+        #else
+            Application.Quit();
+        #endif
+    }
 
 }

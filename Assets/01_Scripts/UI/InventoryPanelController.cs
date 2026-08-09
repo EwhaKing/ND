@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// InventoryManager1
+/// InventoryPanelController
 ///
 /// 담당:
 /// - 인벤토리 창 UI의 열기/닫기 상태를 제어
@@ -17,29 +17,38 @@ using UnityEngine.UI;
 /// - InventoryUI와 함께 인벤토리 창 표시 및 아이템 설명 표시 흐름을 구성
 ///
 /// TODO:
-/// - 클래스명을 InventoryPanelController로 변경 검토
-/// 
 /// - InventoryManager와 혼동되지 않도록 데이터 관리와 UI 창 제어 역할을 분리
 /// - gameObject 자체를 비활성화하는 구조 대신, 별도의 inventoryPanel GameObject를 제어하는 방식 검토
 /// </summary>
-public class InventoryManagerUI1 : MonoBehaviour
-{
 
-private void Start()
+public class InventoryPanelController : MonoBehaviour
+{
+    [SerializeField] private GameObject inventoryPanel;
+
+    private void Start()
     {
         CloseWindow();
     }
 
     public void OpenWindow()
     {
-        gameObject.SetActive(true);
-        InventoryUI.Instance.HideDescription();
-        
+        if (inventoryPanel != null)
+        {
+            inventoryPanel.SetActive(true);
+        }
+
+        // 인벤토리 열 때 설명창 초기화
+        if (InventoryUI.Instance != null)
+        {
+            InventoryUI.Instance.HideDescription();
+        }
     }
 
     public void CloseWindow()
     {
-        gameObject.SetActive(false);
+        if (inventoryPanel != null)
+        {
+            inventoryPanel.SetActive(false);
+        }
     }
-
 }
