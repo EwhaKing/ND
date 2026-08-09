@@ -1306,6 +1306,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e892b411a6a54b24e96cecbb01169616, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InventoryManagerUI1
+  inventoryPanel: {fileID: 544994002477285496}
 --- !u!114 &2236873866827260545
 MonoBehaviour:
   m_ObjectHideFlags: 0
