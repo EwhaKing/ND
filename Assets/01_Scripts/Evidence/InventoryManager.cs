@@ -36,6 +36,7 @@ public class InventoryManager : MonoBehaviour
 
     [Header("보유한 단서")]
     public List<ClueData> acquiredItems = new List<ClueData>();
+    private Dictionary<string, ClueData> acquiredItemsDict = new Dictionary<string, ClueData>();
 
     [Header("인벤토리 아이콘")]
     public Image[] slotIcons; 
@@ -54,11 +55,14 @@ public class InventoryManager : MonoBehaviour
     // 아이템 추가 기능
     public string AddItem(ClueData itemData, bool updateUI = true)
     {
+        if (itemData == null) return null;
+
         string combineMessage = null;
         
-        if (!acquiredItems.Contains(itemData))
+        if (!acquiredItemsDict.ContainsKey(itemData.clueID))
         {
             acquiredItems.Add(itemData);
+            acquiredItemsDict[itemData.clueID] = itemData;
 
             if (InvestigationManager.Instance != null)
             {
@@ -79,13 +83,12 @@ public class InventoryManager : MonoBehaviour
     // 아이템 보유 검사 기능
     public bool HasItem(string itemID)
     {
-        foreach (ClueData item in acquiredItems)
-        {
-            if (item.clueID == itemID) return true;
-        }
-        return false;
+        if (string.IsNullOrEmpty(itemID)) return false;
+
+        return acquiredItemsDict.ContainsKey(itemID);
     }
 
+    // 자동 조합 검사 및 처리 기능
     private string CheckAutoCombine(ClueData newItem, bool updateUI)
     {
         ClueData partnerItem = null;
@@ -110,9 +113,12 @@ public class InventoryManager : MonoBehaviour
 
             if (resultItem != null)
             {
+                acquiredItemsDict.Remove(newItem.clueID);
+                acquiredItemsDict.Remove(partnerItem.clueID);
                 acquiredItems.Remove(newItem);
                 acquiredItems.Remove(partnerItem);
 
+                acquiredItemsDict.Add(resultItem.clueID, resultItem);
                 acquiredItems.Add(resultItem);
 
                 if (InvestigationManager.Instance != null)
@@ -120,7 +126,7 @@ public class InventoryManager : MonoBehaviour
                     InvestigationManager.Instance.UpdateProgress(resultItem, updateUI);
                 }
 
-                string customText = newItem.combineText;                                
+                string customText = newItem.combineText; 
 
                 return customText;
             }
@@ -132,10 +138,7 @@ public class InventoryManager : MonoBehaviour
     // 인벤토리 UI 업데이트 기능
     public void UpdateInventoryUI()
     {
-        if (slotIcons == null || slotIcons.Length == 0) 
-        {
-            return;
-        }
+        if (slotIcons == null || slotIcons.Length == 0) return;
 
         for (int i = 0; i < slotIcons.Length; i++)
         {

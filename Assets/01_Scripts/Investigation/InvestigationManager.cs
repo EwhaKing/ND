@@ -59,6 +59,7 @@ public class InvestigationManager : MonoBehaviour
 
     private int progressRate = 0; // 조사율 (0~100)
     private bool isFinishabled = false; // 조사 종료 활성화 여부
+    private List<ClueData> countedClues = new List<ClueData>(); // 이미 조사율 계산에 포함된 단서 목록 (중복 방지)
 
     private void Awake()
     {
@@ -124,11 +125,16 @@ public class InvestigationManager : MonoBehaviour
             EnableToFinish();
         }
     }
+
     // 조사율 업데이트 메서드
     public void UpdateProgress(ClueData acquiredClue, bool updateUI = true)
     {
-        if (stageClues.Contains(acquiredClue))
+        if (acquiredClue == null) return;
+
+        if (stageClues.Contains(acquiredClue) && !countedClues.Contains(acquiredClue))
         {
+            countedClues.Add(acquiredClue); 
+
             if (acquiredClue.clueType == ClueType.Core) 
             {
                 foundCoreCount++;
