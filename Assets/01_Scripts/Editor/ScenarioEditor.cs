@@ -26,7 +26,6 @@ using UnityEngine;
 /// - Step 수가 많아질 경우 접기/펼치기 Foldout 기능 추가 검토
 /// - 데이터 변경 시 Undo.RecordObject 적용 검토
 /// 
-/// - 한글 깨짐이 있는 Debug 문자열 정리 필요
 /// </summary>
 [CustomEditor(typeof(ScenarioData))]
 public class ScenarioDataEditor : Editor
@@ -63,20 +62,20 @@ public class ScenarioDataEditor : Editor
                 EditorStyles.boldLabel
             );
 
-            // ���� �̵�
+           
             GUI.enabled = i > 0;
 
-            if (GUILayout.Button("��", GUILayout.Width(30)))
+            if (GUILayout.Button("up", GUILayout.Width(30)))
             {
                 SwapSteps(i, i - 1);
                 GUI.enabled = true;
                 break;
             }
 
-            // �Ʒ��� �̵�
+          
             GUI.enabled = i < scenarioData.steps.Count - 1;
 
-            if (GUILayout.Button("��", GUILayout.Width(30)))
+            if (GUILayout.Button("down", GUILayout.Width(40)))
             {
                 SwapSteps(i, i + 1);
                 GUI.enabled = true;
@@ -149,13 +148,31 @@ public class ScenarioDataEditor : Editor
 
             case ScenarioStepType.StandingHide:
                 EditorGUILayout.HelpBox(
-                    "���� ǥ�� ���� ���ĵ��� ����ϴ�.",
+                    "Standing Hide.",
                     MessageType.Info
                 );
                 break;
 
             case ScenarioStepType.Choice:
                 DrawChoices(step);
+                break;
+
+            case ScenarioStepType.CGShow:
+                step.cgSprite =
+                    (Sprite)EditorGUILayout.ObjectField(
+                        "CG Sprite",
+                        step.cgSprite,
+                        typeof(Sprite),
+                        false
+                    );
+                break;
+
+
+            case ScenarioStepType.CGHide:
+                EditorGUILayout.HelpBox(
+                    "현재 표시 중인 CG를 제거합니다.",
+                    MessageType.Info
+                );
                 break;
         }
     }
@@ -209,7 +226,7 @@ public class ScenarioDataEditor : Editor
 {
             case ChoiceActionType.NextStep:
                 EditorGUILayout.HelpBox(
-                "������ ���� ���� ���� Step���� �����մϴ�.",
+                "Next Step.",
                 MessageType.Info
                 );
             break;
@@ -297,13 +314,13 @@ public class ScenarioDataEditor : Editor
                     step.stands[i].standName
                 );
 
-            step.stands[i].sprite =
+            /*step.stands[i].sprite =
                 (Sprite)EditorGUILayout.ObjectField(
                     "Sprite",
                     step.stands[i].sprite,
                     typeof(Sprite),
                     false
-                );
+                );*/
 
             EditorGUILayout.EndVertical();
         }
@@ -344,7 +361,7 @@ public class ScenarioDataEditor : Editor
                 EditorStyles.boldLabel
             );
 
-            if (GUILayout.Button("��", GUILayout.Width(30)) &&
+            if (GUILayout.Button("up", GUILayout.Width(30)) &&
                 i > 0)
             {
                 SwapReactionSteps(
@@ -358,7 +375,7 @@ public class ScenarioDataEditor : Editor
                 break;
             }
 
-            if (GUILayout.Button("��", GUILayout.Width(30)) &&
+            if (GUILayout.Button("down", GUILayout.Width(30)) &&
                 i < choice.reactionSteps.Count - 1)
             {
                 SwapReactionSteps(
@@ -372,7 +389,7 @@ public class ScenarioDataEditor : Editor
                 break;
             }
 
-            if (GUILayout.Button("����", GUILayout.Width(50)))
+            if (GUILayout.Button("remove", GUILayout.Width(50)))
             {
                 choice.reactionSteps.RemoveAt(i);
 
@@ -394,7 +411,7 @@ public class ScenarioDataEditor : Editor
             EditorGUILayout.EndVertical();
         }
 
-        if (GUILayout.Button("Reaction �߰�"))
+        if (GUILayout.Button("Reaction Add"))
         {
             choice.reactionSteps.Add(
                 new ReactionStep()
@@ -413,7 +430,7 @@ public class ScenarioDataEditor : Editor
                     );
                 break;
 
-            case ReactionStepType.StandingChange:
+            /*case ReactionStepType.StandingChange:
                 reaction.standName =
                     EditorGUILayout.TextField(
                         "Stand Name",
@@ -427,7 +444,7 @@ public class ScenarioDataEditor : Editor
                         typeof(Sprite),
                         false
                     );
-                break;
+                break;*/
 
             case ReactionStepType.Wait:
                 reaction.waitSeconds =

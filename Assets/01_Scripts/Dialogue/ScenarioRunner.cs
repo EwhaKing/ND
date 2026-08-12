@@ -30,8 +30,7 @@ using UnityEngine.SceneManagement;
 /// - 선택지 결과가 GameFlagManager에 저장되도록 연결 필요
 /// - Narration / CG / Command 타입 Step 추가 시 ExecuteStep 분기 확장 필요
 /// - 시나리오 종료 후 다음 게임 상태로 넘어가는 콜백 구조 추가 필요
-/// 
-/// - 한글 깨짐이 있는 Debug 문자열 정리 필요
+
 /// </summary>
 public class ScenarioRunner : MonoBehaviour
 {
@@ -49,6 +48,9 @@ public class ScenarioRunner : MonoBehaviour
     [Header("Standing")]
     [SerializeField] private StandingController standingController;
 
+    [Header("CG")]
+    [SerializeField] private CGController cgController;
+
     private int currentStepIndex;
     private bool isRunning;
     private bool isWaitingForDialogue;
@@ -56,6 +58,7 @@ public class ScenarioRunner : MonoBehaviour
     private bool sceneLoadRequested;
     private ChoiceData selectedChoice;
     private Coroutine scenarioCoroutine;
+    private bool isWaitingForCG;
 
     private void Start()
     {
@@ -69,7 +72,7 @@ public class ScenarioRunner : MonoBehaviour
     {
         if (isRunning)
         {
-            Debug.LogWarning("�̹� �ó������� ���� ���Դϴ�.");
+            Debug.LogWarning("시나리오 실행.");
             return;
         }
 
@@ -108,7 +111,7 @@ public class ScenarioRunner : MonoBehaviour
             if (step == null)
             {
                 Debug.LogWarning(
-                    $"{currentStepIndex}�� Step�� ��� �ֽ��ϴ�."
+                    $"{currentStepIndex}번 Step 비어 있음."
                 );
 
                 currentStepIndex++;
@@ -124,7 +127,7 @@ public class ScenarioRunner : MonoBehaviour
         scenarioCoroutine = null;
 
         Debug.Log(
-            $"�ó����� ����: {scenarioData.scenarioId}"
+            $"시나리오 종료: {scenarioData.scenarioId}"
         );
     }
 
@@ -154,30 +157,40 @@ public class ScenarioRunner : MonoBehaviour
                 yield return PlayChoice(step);
                 break;
 
+            case ScenarioStepType.CGShow:
+                yield return ShowCG(step);
+                break;
+
+            case ScenarioStepType.CGHide:
+                HideCG();
+                break;
+
             default:
                 Debug.LogWarning(
-                    $"ó������ ���� Step Ÿ��: {step.stepType}"
+                    $"처리되지 않은 Step: {step.stepType}"
                 );
                 break;
         }
     }
     private IEnumerator PlayDialogue(string dialogueId)
     {
-        DialogueDatabase.DialogueEntry entry =
-            dialogueDatabase.GetDialogue(dialogueId);
+        DialogueDatabase.DialogueEntry entry = dialogueDatabase.GetDialogue(dialogueId);
 
         if (entry == null)
-        {
+        {   
             yield break;
         }
-
+        var dialogueEntry = dialogueDatabase.GetDialogue(dialogueId);
         if (standingController != null)
         {
-            standingController.SetColor(entry.speaker);
+            standingController.SetExpression(dialogueEntry.expressionCode);
         }
+        /*if (standingController != null)
+        {
+            standingController.SetColor(entry.speaker);
+        }*/
 
         isWaitingForDialogue = true;
-
         dialogueManager.ShowSingleLine(
             entry.speaker,
             entry.dialogue,
@@ -187,6 +200,7 @@ public class ScenarioRunner : MonoBehaviour
         yield return new WaitUntil(
             () => !isWaitingForDialogue
         );
+
     }
 
     private void OnDialogueFinished()
@@ -199,7 +213,7 @@ public class ScenarioRunner : MonoBehaviour
         if (standingController == null)
         {
             Debug.LogError(
-                "StandingController�� ������� �ʾҽ��ϴ�."
+                "StandingController가 연결되지 않음."
             );
             return;
         }
@@ -212,7 +226,7 @@ public class ScenarioRunner : MonoBehaviour
         if (standingController == null)
         {
             Debug.LogError(
-                "StandingController�� ������� �ʾҽ��ϴ�."
+                "StandingController가 연결되지 않음."
             );
             return;
         }
@@ -220,8 +234,7 @@ public class ScenarioRunner : MonoBehaviour
         standingController.Hide();
     }
 
-    private IEnumerator ExecuteChoiceAction(
-    ChoiceData choice)
+    private IEnumerator ExecuteChoiceAction(ChoiceData choice)
     {
         switch (choice.actionType)
         {
@@ -253,8 +266,7 @@ public class ScenarioRunner : MonoBehaviour
 
         SceneManager.LoadScene(targetScene);
     }
-    private IEnumerator ExecuteReactionSteps(
-    List<ReactionStep> reactionSteps)
+    private IEnumerator ExecuteReactionSteps(List<ReactionStep> reactionSteps)
     {
         if (reactionSteps == null ||
             reactionSteps.Count == 0)
@@ -286,12 +298,12 @@ public class ScenarioRunner : MonoBehaviour
                     );
                     break;
 
-                case ReactionStepType.StandingChange:
+                /*case ReactionStepType.StandingChange:
                     standingController.ChangeSprite(
                         reactionStep.standName,
                         reactionStep.standingSprite
                     );
-                    break;
+                    break;*/
 
                 case ReactionStepType.Wait:
                     yield return new WaitForSecondsRealtime(
@@ -351,8 +363,7 @@ public class ScenarioRunner : MonoBehaviour
         selectedChoice = choice;
         isWaitingForChoice = false;
     }
-    private IEnumerator PlayScenario(
-    ScenarioData targetScenario)
+    private IEnumerator PlayScenario(ScenarioData targetScenario)
     {
         sceneLoadRequested = false;
 
@@ -378,7 +389,7 @@ public class ScenarioRunner : MonoBehaviour
         if (scenarioData == null)
         {
             Debug.LogError(
-                "ScenarioRunner�� ScenarioData�� �����ϴ�."
+                "ScenarioRunner에 ScenarioData가 없음."
             );
             return false;
         }
@@ -386,7 +397,7 @@ public class ScenarioRunner : MonoBehaviour
         if (dialogueDatabase == null)
         {
             Debug.LogError(
-                "ScenarioRunner�� DialogueDatabase�� ������� �ʾҽ��ϴ�."
+                "ScenarioRunner에 DialogueDatabase가 연결되지 않음"
             );
             return false;
         }
@@ -394,7 +405,7 @@ public class ScenarioRunner : MonoBehaviour
         if (dialogueManager == null)
         {
             Debug.LogError(
-                "ScenarioRunner�� DialogueManager�� ������� �ʾҽ��ϴ�."
+                "ScenarioRunne에r DialogueManager가 연결되지 않음."
             );
             return false;
         }
@@ -402,12 +413,72 @@ public class ScenarioRunner : MonoBehaviour
         if (!dialogueDatabase.IsLoaded)
         {
             Debug.LogError(
-                "DialogueDatabase�� ���� CSV�� ���� ���߽��ϴ�."
+                "DialogueDatabase가 CSV를 불러오지 못함."
             );
             return false;
         }
 
         return true;
+    }
+    private IEnumerator ShowCG(
+    ScenarioStep step)
+    {
+        if (cgController == null)
+        {
+            Debug.LogError(
+                "CGController가 연결되지 않았습니다."
+            );
+
+            yield break;
+        }
+
+        if (step.cgSprite == null)
+        {
+            Debug.LogError(
+                "CGShow Step에 CG Sprite가 없습니다."
+            );
+
+            yield break;
+        }
+
+        // 대화창 숨기기
+        if (dialogueManager != null)
+        {
+            dialogueManager.HideDialogueUI();
+        }
+
+        isWaitingForCG = true;
+
+        // CG 표시
+        cgController.Show(
+            step.cgSprite,
+            OnCGClicked
+        );
+
+        // 플레이어 클릭까지 대기
+        yield return new WaitUntil(
+            () => !isWaitingForCG
+        );
+
+        // 클릭하면 대화창 다시 표시
+        if (dialogueManager != null)
+        {
+            dialogueManager.ShowDialogueUI();
+        }
+    }
+
+    public void OnCGClicked()
+    {
+        isWaitingForCG=false;
+    }
+    private void HideCG()
+    {
+        if (cgController == null)
+        {
+            Debug.LogError("CGController가 연결되지 않았습니다.");
+            return;
+        }
+        cgController.Hide();
     }
 }
 

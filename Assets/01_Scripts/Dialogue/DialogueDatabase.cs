@@ -25,7 +25,6 @@ using UnityEngine;
 /// - CG ID, Effect, Wait, Standing, Position, Expression 등 추가 컬럼 파싱 지원
 /// - 구글 스프레드시트 연동 시 CSV 갱신/로드 방식 정리
 /// 
-/// - 한글 깨짐이 있는 Debug 문자열 정리 필요
 /// </summary>
 public class DialogueDatabase : MonoBehaviour
 {
@@ -35,6 +34,7 @@ public class DialogueDatabase : MonoBehaviour
         public string id;
         public string speaker;
         public string dialogue;
+        public string expressionCode;
     }
 
     [Header("CSV")]
@@ -53,7 +53,7 @@ public class DialogueDatabase : MonoBehaviour
     {
         if (string.IsNullOrWhiteSpace(id))
         {
-            Debug.LogError("��� ID�� ��� �ֽ��ϴ�.");
+            Debug.LogError("null id.");
             return null;
         }
 
@@ -62,7 +62,7 @@ public class DialogueDatabase : MonoBehaviour
             return entry;
         }
 
-        Debug.LogError($"CSV���� ��� ID�� ã�� ���߽��ϴ�: {id}");
+        Debug.LogError($"not found id: {id}");
         return null;
     }
 
@@ -81,7 +81,7 @@ public class DialogueDatabase : MonoBehaviour
         if (dialogueCsv == null)
         {
             Debug.LogError(
-                "DialogueDatabase�� CSV ������ ������� �ʾҽ��ϴ�."
+                "DialogueDatabase에 CSV 연결 안 됨."
             );
             return;
         }
@@ -91,12 +91,11 @@ public class DialogueDatabase : MonoBehaviour
         if (rows.Count <= 1)
         {
             Debug.LogError(
-                $"CSV�� ��� �����Ͱ� �����ϴ�: {dialogueCsv.name}"
+                $"CSV에 대화 데이터 없음: {dialogueCsv.name}"
             );
             return;
         }
 
-        // ù ��° ���� id,speaker,dialogue ����̹Ƿ� �ǳʶڴ�.
         for (int i = 1; i < rows.Count; i++)
         {
             string[] row = rows[i];
@@ -104,7 +103,7 @@ public class DialogueDatabase : MonoBehaviour
             if (row.Length < 3)
             {
                 Debug.LogWarning(
-                    $"{dialogueCsv.name}�� {i + 1}�� �� ������ �����մϴ�."
+                    $"{dialogueCsv.name}의 {i + 1}번째 형식이 잘못됨."
                 );
                 continue;
             }
@@ -112,11 +111,14 @@ public class DialogueDatabase : MonoBehaviour
             string id = row[0].Trim();
             string speaker = row[1].Trim();
             string dialogue = row[2].Trim();
+            string expressionCode = row.Length >= 4 
+                ? row[3].Trim()
+                : string.Empty;
 
             if (string.IsNullOrWhiteSpace(id))
             {
                 Debug.LogWarning(
-                    $"{dialogueCsv.name}�� {i + 1}�� ID�� ��� �ֽ��ϴ�."
+                    $"{dialogueCsv.name}의 {i + 1}번째 줄 ID가 비어있음."
                 );
                 continue;
             }
@@ -124,7 +126,7 @@ public class DialogueDatabase : MonoBehaviour
             if (table.ContainsKey(id))
             {
                 Debug.LogError(
-                    $"�ߺ��� ��� ID�� �ֽ��ϴ�: {id}"
+                    $"중복된 id: {id}"
                 );
                 continue;
             }
@@ -135,7 +137,8 @@ public class DialogueDatabase : MonoBehaviour
                 {
                     id = id,
                     speaker = speaker,
-                    dialogue = dialogue
+                    dialogue = dialogue,
+                    expressionCode = expressionCode
                 }
             );
         }
@@ -143,7 +146,7 @@ public class DialogueDatabase : MonoBehaviour
         IsLoaded = true;
 
         Debug.Log(
-            $"��� CSV �ε� �Ϸ�: {table.Count}��"
+            $"CSV 로드 완료: {table.Count}개"
         );
     }
 

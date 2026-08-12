@@ -26,23 +26,23 @@ using UnityEngine.UI;
 /// - CG 출력 중에는 스탠딩을 자동으로 숨기는 기능 추가 검토
 /// - 스탠딩 등장/퇴장 Fade 연출 추가
 /// 
-/// - 한글 깨짐이 있는 Debug 문자열 정리 필요
 /// </summary>
 public class StandingController : MonoBehaviour
 {
-    //[SerializeField] private GameObject dim;
     [SerializeField] private Image[] images;
-
+    
+    [Header("Expressions")]
+    [SerializeField]
+    private List<ExpressionData> expressions = new List<ExpressionData>();
     private readonly List<StandStep> currentStands = new List<StandStep>();
 
     public void SetSprite(StandStep[] stands)
     {
-        //dim.SetActive(true);
         currentStands.Clear();
 
         for (int i = 0; i < images.Length; i++)
         {
-            bool hasStand = i < stands.Length && stands[i].sprite != null;
+            bool hasStand = i < stands.Length && !string.IsNullOrWhiteSpace(stands[i].standName);
 
             images[i].gameObject.SetActive(hasStand);
 
@@ -53,8 +53,11 @@ public class StandingController : MonoBehaviour
 
             currentStands.Add(stands[i]);
 
-            images[i].sprite = stands[i].sprite;
-            images[i].rectTransform.sizeDelta = new Vector2(500f, 800f);
+            Sprite defaultSprite =
+                FindDefaultSprite(stands[i].standName);
+
+            images[i].sprite = defaultSprite;
+            images[i].rectTransform.sizeDelta = new Vector2(500f, 500f);
             images[i].color = Color.white;
 
             if (stands.Length > 1)
@@ -68,8 +71,30 @@ public class StandingController : MonoBehaviour
             }
         }
     }
+    private Sprite FindDefaultSprite(string standName)
+    {
+        foreach (ExpressionData expression in expressions)
+        {
+            if (expression == null)
+            {
+                continue;
+            }
 
-    public void SetColor(string speaker)
+            if (expression.standName == standName &&
+                expression.code.EndsWith("00"))
+            {
+                return expression.sprite;
+            }
+        }
+
+        Debug.LogWarning(
+            $"기본 표정을 찾을 수 없습니다: {standName}"
+        );
+
+        return null;
+    }
+
+    /*public void SetColor(string speaker)
     {
         int count = Mathf.Min(
             currentStands.Count,
@@ -106,12 +131,10 @@ public class StandingController : MonoBehaviour
                     ? Color.white
                     : Color.gray;
         }
-    }
+    }*/
 
     public void Hide()
     {
-        //dim.SetActive(false);
-
         foreach (Image image in images)
         {
             image.gameObject.SetActive(false);
@@ -120,21 +143,23 @@ public class StandingController : MonoBehaviour
 
         currentStands.Clear();
     }
-    public void ChangeSprite(
-    string standName,
-    Sprite newSprite)
+    public void ChangeSprite(string standName, Sprite newSprite)
     {
         if (string.IsNullOrWhiteSpace(standName))
         {
-            Debug.LogError("������ ĳ���� �̸��� ��� �ֽ��ϴ�.");
+            Debug.LogError(
+                "변경할 캐릭터 이름이 비어 있습니다."
+            );
+
             return;
         }
 
         if (newSprite == null)
         {
             Debug.LogError(
-                $"{standName}���� ������ Sprite�� �����ϴ�."
+                $"'{standName}'에게 적용할 Sprite가 없습니다."
             );
+
             return;
         }
 
@@ -145,18 +170,57 @@ public class StandingController : MonoBehaviour
                 continue;
             }
 
-            currentStands[i].sprite = newSprite;
             images[i].sprite = newSprite;
 
             Debug.Log(
-                $"���ĵ� ǥ�� ����: {standName} �� {newSprite.name}"
+                $"스탠딩 표정 변경: {standName} -> {newSprite.name}"
             );
 
             return;
         }
 
         Debug.LogWarning(
-            $"���� ǥ�� ���� ���ĵ����� ã�� ���߽��ϴ�: {standName}"
+            $"현재 화면에 표시 중인 스탠딩을 찾지 못했습니다: {standName}"
         );
+    }
+    public void SetExpression(string expressionCode)
+    {
+        if (string.IsNullOrWhiteSpace(expressionCode))
+        {
+            return;
+        }
+
+        ExpressionData expression =  FindExpression(expressionCode);
+
+        if (expression == null)
+        {
+            Debug.LogWarning(
+                $"등록되지 않은 표정 코드입니다: {expressionCode}"
+            );
+
+            return;
+        }
+
+        ChangeSprite(
+            expression.standName,
+            expression.sprite
+        );
+    }
+    private ExpressionData FindExpression(string expressionCode)
+    {
+        foreach (ExpressionData expression in expressions)
+        {
+            if (expression == null)
+            {
+                continue;
+            }
+
+            if (expression.code == expressionCode)
+            {
+                return expression;
+            }
+        }
+
+        return null;
     }
 }

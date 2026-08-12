@@ -26,7 +26,6 @@ using UnityEngine.UI;
 /// - 선택지 선택 시 사운드/하이라이트 효과 추가
 /// - 선택 결과가 GameFlagManager나 ChapterManager에 영향을 주도록 확장
 /// 
-/// - 한글 깨짐이 있는 Debug 문자열 정리 필요
 /// </summary>
 public class ChoiceController : MonoBehaviour
 {
@@ -42,7 +41,7 @@ public class ChoiceController : MonoBehaviour
 
             if (choices == null || choices.Count == 0)
         {
-            Debug.LogWarning("ǥ���� �������� �����ϴ�.");
+            Debug.LogWarning("선택지 표시.");
             return;
         }
 
@@ -71,7 +70,7 @@ public class ChoiceController : MonoBehaviour
 
         button.onClick.AddListener(() =>
         {
-            Debug.Log($"������ ����: {choice.choiceText}");
+            Debug.Log($"선택한 텍스트: {choice.choiceText}");
 
             ClearButtons();
             onChoiceSelected?.Invoke(choice);
