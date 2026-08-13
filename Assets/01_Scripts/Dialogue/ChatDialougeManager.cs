@@ -26,7 +26,6 @@ using UnityEngine.UI;
 /// - CG 타입일 때 CG 이미지와 대화창을 함께 출력하는 기능 추가
 /// - 대사 사이 Wait, Fade, Shake 등 연출 명령과의 연결 추가
 /// 
-/// - 한글 깨짐이 있는 Debug 문자열 정리 필요
 /// </summary>
 public class ChatDialogueManager : MonoBehaviour
 {
@@ -38,6 +37,8 @@ public class ChatDialogueManager : MonoBehaviour
         [TextArea(2, 6)]
         public string dialogue;
     }
+
+    [SerializeField] private GameObject dialogueRoot;
 
     [Header("UI")]
     [SerializeField] private TMP_Text speakerText;
@@ -90,7 +91,7 @@ public class ChatDialogueManager : MonoBehaviour
     {
         if (lines == null || lines.Length == 0)
         {
-            Debug.LogWarning("����� ��簡 �����ϴ�.");
+            Debug.LogWarning("대사 출력 시작.");
             finishedCallback?.Invoke();
             return;
         }
@@ -125,14 +126,12 @@ public class ChatDialogueManager : MonoBehaviour
 
     public void OnDialogueClicked()
     {
-        // Ÿ���� �� Ŭ���ϸ� ���� ������ ��� �ϼ��Ѵ�.
         if (isTyping)
         {
             CompleteTypingImmediately();
             return;
         }
 
-        // ���� ��� ���� ���� Ŭ�� ����
         if (!canProceed)
         {
             return;
@@ -153,7 +152,6 @@ public class ChatDialogueManager : MonoBehaviour
 
         DialogueLine currentLine = currentLines[currentLineIndex];
 
-        // ȭ�ڰ� ������ �� ���ڿ��� �ִ´�.
         speakerText.text = currentLine.speaker ?? string.Empty;
 
         currentFullText = currentLine.dialogue ?? string.Empty;
@@ -292,6 +290,21 @@ public class ChatDialogueManager : MonoBehaviour
         if (nextIndicator != null)
         {
             nextIndicator.SetActive(false);
+        }
+    }
+    public void ShowDialogueUI()
+    {
+        if (dialogueRoot != null)
+        {
+            dialogueRoot.SetActive(true);
+        }
+    }
+
+    public void HideDialogueUI()
+    {
+        if (dialogueRoot != null)
+        {
+            dialogueRoot.SetActive(false);
         }
     }
 }

@@ -26,7 +26,6 @@ using UnityEngine;
 /// - 씬 이동 대신 GameState 전환 방식으로 LoadScene 로직 개선 검토
 /// - 구글 스프레드시트 기반 시나리오 데이터와 현재 ScriptableObject 구조의 역할 분리 필요
 /// 
-/// - 한글 깨짐이 있는 Debug 문자열 정리 필요
 /// </summary>
 
 
@@ -40,7 +39,9 @@ public enum ScenarioStepType
     Wait,
     StandingShow,
     StandingHide,
-    Choice
+    Choice,
+    CGShow,
+    CGHide
 }
 
 /// <summary>
@@ -86,6 +87,9 @@ public class ScenarioStep
 
     [Header("Choice")]
     public List<ChoiceData> choices = new();
+
+    [Header("CG")]
+    public Sprite cgSprite;
 }
 
 /// <summary>
@@ -99,25 +103,21 @@ public class ChoiceData
 
     public ChoiceActionType actionType;
 
-    [Tooltip("ReactionThenNext�� �� ������ ª�� ����")]
     public List<ReactionStep> reactionSteps =
         new List<ReactionStep>();
 
-    [Tooltip("LoadScene�� �� �̵��� ��")]
     public string targetScene;
 }
 
 /// <summary>
 /// 스탠딩 캐릭터 출력에 필요한 정보를 담는 데이터
-/// speaker 이름과 연결되는 standName, 출력할 Sprite를 관리
+/// speaker 이름과 연결되는 standName을 관리
 /// </summary>
 [Serializable]
 public class StandStep
 {
-    [Tooltip("CSV�� speaker �̸��� ���ƾ� �մϴ�.")]
     public string standName;
 
-    public Sprite sprite;
 }
 
 /// <summary>
@@ -134,7 +134,7 @@ public class ReactionStep
 
     [Header("Standing")]
     public string standName;
-    public Sprite standingSprite;
+    //public Sprite standingSprite;
 
     [Header("Wait")]
     [Min(0f)]
