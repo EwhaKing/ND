@@ -41,17 +41,22 @@ public class ChatDialogueManager : MonoBehaviour
     [SerializeField] private GameObject dialogueRoot;
 
     [Header("UI")]
+    [SerializeField] private GameObject nameBG;
     [SerializeField] private TMP_Text speakerText;
     [SerializeField] private TMP_Text dialogueText;
     [SerializeField] private GameObject nextIndicator;
     [SerializeField] private Button clickArea;
+    
 
     [Header("Typing")]
     [SerializeField, Min(0.001f)]
     private float typingSpeed = 0.04f;
-
     [SerializeField, Min(0f)]
     private float nextInputDelay = 0.3f;
+
+    [Header("Log")]
+    [SerializeField]
+    private DialogueLogManager dialogueLogManager;
 
     private DialogueLine[] currentLines;
 
@@ -112,6 +117,7 @@ public class ChatDialogueManager : MonoBehaviour
         string dialogue,
         Action finishedCallback = null)
     {
+
         DialogueLine[] singleLine =
         {
             new DialogueLine
@@ -151,8 +157,26 @@ public class ChatDialogueManager : MonoBehaviour
         }
 
         DialogueLine currentLine = currentLines[currentLineIndex];
+        // 대화 내용 로그에 저장
+        if (dialogueLogManager != null)
+        {
+            dialogueLogManager.AddLog(
+                currentLine.speaker,
+                currentLine.dialogue
+            );
+        }
 
-        speakerText.text = currentLine.speaker ?? string.Empty;
+        bool hasSpeaker =!string.IsNullOrWhiteSpace(currentLine.speaker);
+
+        if (nameBG != null)
+        {
+            nameBG.SetActive(hasSpeaker);
+        }
+
+        speakerText.text =
+            hasSpeaker
+                ? currentLine.speaker
+                : string.Empty;
 
         currentFullText = currentLine.dialogue ?? string.Empty;
 
@@ -243,6 +267,10 @@ public class ChatDialogueManager : MonoBehaviour
 
         speakerText.text = string.Empty;
         dialogueText.text = string.Empty;
+        if (nameBG != null)
+        {
+            nameBG.SetActive(false);
+        }
         nextIndicator.SetActive(false);
 
         Action finishedCallback = onDialogueFinished;
@@ -277,6 +305,10 @@ public class ChatDialogueManager : MonoBehaviour
 
     private void ResetDialogueUI()
     {
+        if (nameBG != null)
+        {
+            nameBG.SetActive(false);
+        }
         if (speakerText != null)
         {
             speakerText.text = string.Empty;
@@ -299,7 +331,6 @@ public class ChatDialogueManager : MonoBehaviour
             dialogueRoot.SetActive(true);
         }
     }
-
     public void HideDialogueUI()
     {
         if (dialogueRoot != null)

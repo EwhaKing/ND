@@ -35,6 +35,7 @@ public class DialogueDatabase : MonoBehaviour
         public string speaker;
         public string dialogue;
         public string expressionCode;
+        public string standName;
     }
 
     [Header("CSV")]
@@ -111,8 +112,9 @@ public class DialogueDatabase : MonoBehaviour
             string id = row[0].Trim();
             string speaker = row[1].Trim();
             string dialogue = row[2].Trim();
-            string expressionCode = row.Length >= 4 
-                ? row[3].Trim()
+            string expressionCode = row[3].Trim();
+            string standName = row.Length >= 5
+                ? row[4].Trim()
                 : string.Empty;
 
             if (string.IsNullOrWhiteSpace(id))
@@ -138,7 +140,8 @@ public class DialogueDatabase : MonoBehaviour
                     id = id,
                     speaker = speaker,
                     dialogue = dialogue,
-                    expressionCode = expressionCode
+                    expressionCode = expressionCode,
+                    standName = standName
                 }
             );
         }
