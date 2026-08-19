@@ -59,12 +59,13 @@ public class ScenarioRunner : MonoBehaviour
     private ChoiceData selectedChoice;
     private Coroutine scenarioCoroutine;
     private bool isWaitingForCG;
+    private bool isSkipping;
 
     private void Start()
     {
         if (playOnStart)
         {
-            PlayScenario();
+            StartCoroutine(PlayScenario(scenarioData));
         }
     }
 
@@ -85,6 +86,7 @@ public class ScenarioRunner : MonoBehaviour
 
         scenarioCoroutine =
             StartCoroutine(ScenarioRoutine());
+
     }
 
     public void StopScenario()
@@ -183,12 +185,21 @@ public class ScenarioRunner : MonoBehaviour
         var dialogueEntry = dialogueDatabase.GetDialogue(dialogueId);
         if (standingController != null)
         {
-            standingController.SetExpression(dialogueEntry.expressionCode);
+            // 표정 코드가 있을 때만 표정 변경
+            if (!string.IsNullOrWhiteSpace(dialogueEntry.expressionCode))
+            {
+                standingController.SetExpression(dialogueEntry.expressionCode);
+            }
+
+            // 발화자 강조는 항상 처리
+            standingController.SetColor(dialogueEntry.standName);
         }
-        /*if (standingController != null)
+
+        if (isSkipping)
         {
-            standingController.SetColor(entry.speaker);
-        }*/
+            yield return null;
+            yield break;
+        }
 
         isWaitingForDialogue = true;
         dialogueManager.ShowSingleLine(
@@ -367,18 +378,33 @@ public class ScenarioRunner : MonoBehaviour
     {
         sceneLoadRequested = false;
 
-        for (int i = 0; i < targetScenario.steps.Count; i++)
+        for (int i = 0;
+        i < targetScenario.steps.Count;
+        i++)
         {
-            ScenarioStep step = targetScenario.steps[i];
+            ScenarioStep step =
+                targetScenario.steps[i];
 
             if (step == null)
             {
                 continue;
             }
 
-            yield return ExecuteStep(step);
+            // 스킵 중인데 Choice를 만났다면
+            // 여기서 스킵 종료
+            if (isSkipping &&
+                step.stepType == ScenarioStepType.Choice)
+            {
+                isSkipping = false;
 
-            if (sceneLoadRequested)
+                Debug.Log(
+                    "선택지 도착 - 스킵 종료"
+                );
+            }
+
+            yield return ExecuteStep(step);
+        
+        if (sceneLoadRequested)
             {
                 yield break;
             }
@@ -420,24 +446,25 @@ public class ScenarioRunner : MonoBehaviour
 
         return true;
     }
-    private IEnumerator ShowCG(
-    ScenarioStep step)
+    private IEnumerator ShowCG(ScenarioStep step)
     {
         if (cgController == null)
         {
-            Debug.LogError(
-                "CGController가 연결되지 않았습니다."
-            );
+            Debug.LogError("CGController가 연결되지 않았습니다.");
 
             yield break;
         }
 
         if (step.cgSprite == null)
         {
-            Debug.LogError(
-                "CGShow Step에 CG Sprite가 없습니다."
-            );
+            Debug.LogError("CGShow Step에 CG Sprite가 없습니다.");
 
+            yield break;
+        }
+
+        if (isSkipping)
+        {
+            // CG를 띄우지 않고 바로 넘어감
             yield break;
         }
 
@@ -466,7 +493,6 @@ public class ScenarioRunner : MonoBehaviour
             dialogueManager.ShowDialogueUI();
         }
     }
-
     public void OnCGClicked()
     {
         isWaitingForCG=false;
@@ -479,6 +505,16 @@ public class ScenarioRunner : MonoBehaviour
             return;
         }
         cgController.Hide();
+    }
+    public void StartSkipToNextChoice()
+    {
+        isSkipping = true;
+        if (isWaitingForDialogue)
+        {
+            isWaitingForDialogue = false;
+        }
+
+        Debug.Log("다음 선택지까지 스킵 시작");
     }
 }
 

@@ -94,12 +94,9 @@ public class StandingController : MonoBehaviour
         return null;
     }
 
-    /*public void SetColor(string speaker)
+    public void SetColor(string speakerStandName)
     {
-        int count = Mathf.Min(
-            currentStands.Count,
-            images.Length
-        );
+        int count = Mathf.Min(currentStands.Count, images.Length);
 
         if (count == 0)
         {
@@ -107,7 +104,7 @@ public class StandingController : MonoBehaviour
         }
 
         bool isNarration =
-            string.IsNullOrWhiteSpace(speaker);
+            string.IsNullOrWhiteSpace(speakerStandName);
 
         for (int i = 0; i < count; i++)
         {
@@ -117,6 +114,7 @@ public class StandingController : MonoBehaviour
                 continue;
             }
 
+            // 나레이션이면 모두 회색
             if (isNarration)
             {
                 images[i].color = Color.gray;
@@ -124,15 +122,15 @@ public class StandingController : MonoBehaviour
             }
 
             bool isCurrentSpeaker =
-                currentStands[i].standName == speaker;
+                currentStands[i].standName ==
+                speakerStandName;
 
             images[i].color =
                 isCurrentSpeaker
                     ? Color.white
                     : Color.gray;
         }
-    }*/
-
+    }
     public void Hide()
     {
         foreach (Image image in images)
