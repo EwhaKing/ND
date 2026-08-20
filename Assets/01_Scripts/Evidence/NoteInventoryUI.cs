@@ -156,26 +156,21 @@ public class NoteInventoryUI : MonoBehaviour
             }
         }
 
-        // 맞는 레시피가 있다면 연상하기 버튼 활성화!
+        // 맞는 레시피가 있다면 연상하기 버튼 활성화
         if (combineButton != null)
         {
             combineButton.interactable = (activeRecipe != null);
         }
     }
 
-    // '연상하기' 버튼을 눌렀을 때 실행되는 함수
     private void OnCombineButtonClicked()
     {
         if (activeRecipe == null || InventoryManager.Instance == null) return;
 
-        // 결과 단서가 목록에 없다면 새로 추가
-        if (!InventoryManager.Instance.acquiredItems.Contains(activeRecipe.resultClue))
-        {
-            InventoryManager.Instance.acquiredItems.Add(activeRecipe.resultClue);
-            Debug.Log($"새로운 단서 획득: {activeRecipe.resultClue.clueName}");
-        }
+        //(딕셔너리 등록, 진행도 갱신, 팝업 처리를 한 번에 수행)
+        InventoryManager.Instance.AddItem(activeRecipe.resultClue);
 
-        // 선택 해제 및 인벤토리 슬롯 새로고침
+        // 선택 해제 및 우측 인벤토리 슬롯 새로고침
         ClearSelections();
         RefreshInventorySlots();
     }
@@ -193,17 +188,15 @@ public class NoteInventoryUI : MonoBehaviour
         if (combineButton != null) combineButton.interactable = false;
     }
 
+        // NoteInventoryUI.cs 내부의 OnSlotDoubleClicked 함수 수정
+        //더블 클릭 시 ClueDetailPopup 팝업을 띄움
     public void OnSlotDoubleClicked(ClueData clue, ItemSlotUI slot)
     {
         if (clue == null) return;
 
-        if (detailPanel != null)
+        if (ClueDetailPopup.Instance != null)
         {
-            detailPanel.SetActive(true);
-            detailPanel.transform.SetAsLastSibling();
-
-            if (itemNameText != null) itemNameText.text = clue.clueName;
-            if (itemDescText != null) itemDescText.text = clue.firstClickText;
+            ClueDetailPopup.Instance.ShowPopup(clue);
         }
     }
 

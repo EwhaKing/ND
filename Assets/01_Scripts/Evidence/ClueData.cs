@@ -18,6 +18,9 @@ public class ClueData : ScriptableObject
     public Sprite clueIcon;                 // 인벤토리 아이콘 이미지
     public ClueType clueType;               // 단서 유형
 
+    [Header("인벤토리 및 팝업")]
+    [TextArea] public string inventoryDescription; // 팝업창 하단에 들어갈 상세 설명
+
     [Header("대사")]
     [TextArea] public string firstClickText;    // 처음 조사했을 때 나오는 대사
     [TextArea] public string secondClickText;   // 두 번째 이후 조사했을 때 나오는 대사 (예: "더 이상 볼 것은 없어 보인다.")
