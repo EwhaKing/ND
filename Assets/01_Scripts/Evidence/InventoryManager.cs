@@ -38,8 +38,9 @@ public class InventoryManager : MonoBehaviour
     public List<ClueData> acquiredItems = new List<ClueData>();
     private Dictionary<string, ClueData> acquiredItemsDict = new Dictionary<string, ClueData>();
 
-    [Header("인벤토리 아이콘")]
+    [Header("인벤토리 아이콘 및 UI")]
     public Image[] slotIcons; 
+    public NoteInventoryUI noteInventoryUI;
 
     private void Awake()
     {
@@ -75,6 +76,18 @@ public class InventoryManager : MonoBehaviour
             {
                 UpdateInventoryUI();
             }
+
+            //필드에서 아이템을 클릭해 인벤토리에 추가될 때 팝업 출력
+            if (ClueDetailPopup.Instance != null)
+            {
+                ClueDetailPopup.Instance.ShowPopup(itemData);
+            }
+
+            if (updateUI)
+            {
+                UpdateInventoryUI();
+            }
+
         }
 
         return combineMessage;
@@ -138,19 +151,27 @@ public class InventoryManager : MonoBehaviour
     // 인벤토리 UI 업데이트 기능
     public void UpdateInventoryUI()
     {
-        if (slotIcons == null || slotIcons.Length == 0) return;
-
-        for (int i = 0; i < slotIcons.Length; i++)
+        // 1. 기존 상단/메인 인벤토리 아이콘 갱신
+        if (slotIcons != null && slotIcons.Length > 0)
         {
-            if (i < acquiredItems.Count)
+            for (int i = 0; i < slotIcons.Length; i++)
             {
-                slotIcons[i].sprite = acquiredItems[i].clueIcon;
-                slotIcons[i].gameObject.SetActive(true);
+                if (i < acquiredItems.Count)
+                {
+                    slotIcons[i].sprite = acquiredItems[i].clueIcon;
+                    slotIcons[i].gameObject.SetActive(true);
+                }
+                else
+                {
+                    slotIcons[i].gameObject.SetActive(false);
+                }
             }
-            else
-            {
-                slotIcons[i].gameObject.SetActive(false);
-            }
+        }
+
+        // 2. 우측 인벤토리 UI도 동시에 새로고침
+        if (noteInventoryUI != null)
+        {
+            noteInventoryUI.RefreshInventorySlots();
         }
     }
 }
