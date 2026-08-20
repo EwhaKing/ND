@@ -44,8 +44,8 @@ public class JudgmentUI : MonoBehaviour
             titleText.text = "심판";
 
             descriptionText.text =
-                "아직 밝혀지지 않은 진실이 남아 있습니다.\n" +
-                "그럼에도 지금 심판하시겠습니까?";
+                "아직 밝혀지지 않은 진실이 남아 있습니다.\n" + "\n" +
+                "그럼에도 당신은 이야기의 결말을 결정합니다.";
         }
     }
 
