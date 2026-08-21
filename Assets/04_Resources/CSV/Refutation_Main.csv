@@ -1,0 +1,5 @@
+열 1,열 2,열 3,열 4,열 5,열 6,열 7,열 8
+id,character,dialogue,expression,isWeakPoint,correctEvidenceId,,
+01_01,Character,빈혈 때문에 어지러워서,Character00,False,,,
+01_02,Character,실수로 발을 헛디뎠단 말이에요!,Character01,True,Test01,,
+01_03,Character,이대로 죽을 수는 없어요!,Character00,False,,,

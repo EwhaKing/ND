@@ -178,7 +178,7 @@ public class InvestigationManager : MonoBehaviour
     // 조사 종료 버튼 클릭 시 호출되는 메서드
     public void Finish()
     {
-        SceneManager.LoadScene("LobbyScene");
+        SceneManager.LoadScene("RefutationScene");
     }
     
 }
