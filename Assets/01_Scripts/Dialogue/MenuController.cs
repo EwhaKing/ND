@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -5,7 +6,7 @@ public class MenuController : MonoBehaviour
 {
     [Header("Menu")]
     [SerializeField] private GameObject menuPanel;
-
+    private bool isMenuOpen;
     [Header("Skip")]
     [SerializeField] private Button skipButton;
     [SerializeField] private GameObject skipConfirmPanel;
@@ -13,11 +14,17 @@ public class MenuController : MonoBehaviour
     [Header("Log")]
     [SerializeField] private GameObject logPanel;
 
+    [Header("UI Hide")]
+    [SerializeField] private GameObject[] hideTargets;
+    [SerializeField] private GameObject uiHideClickArea;
+    private bool isUIHidden;
+    private readonly Dictionary<GameObject, bool>
+        previousActiveStates =
+            new Dictionary<GameObject, bool>();
+
     [Header("References")]
     [SerializeField] private ScenarioRunner scenarioRunner;
 
-    private bool isMenuOpen;
-    private bool isLogOpen;
 
     private void Start()
     {
@@ -86,13 +93,6 @@ public class MenuController : MonoBehaviour
         skipConfirmPanel.SetActive(false);
     }
 
-    public void ToggleLog()
-    {
-        isLogOpen = !isLogOpen;
-
-        logPanel.SetActive(isLogOpen);
-    }
-
     private void UpdateSkipButton()
     {
         if (skipButton == null)
@@ -105,5 +105,64 @@ public class MenuController : MonoBehaviour
             GameProgressManager.Instance.CanSkip;
 
         skipButton.interactable = canSkip;
+    }
+    public void HideUI()
+    {
+        if (isUIHidden)
+        {
+            return;
+        }
+
+
+        isUIHidden = true;
+
+        previousActiveStates.Clear();
+
+        foreach (GameObject target in hideTargets)
+        {
+            if (target == null)
+            {
+                continue;
+            }
+
+            previousActiveStates[target] = target.activeSelf;
+
+            target.SetActive(false);
+        }
+
+        if (uiHideClickArea != null)
+        {
+            uiHideClickArea.SetActive(true);
+        }
+    }
+
+    public void RestoreUI()
+    {
+        if (!isUIHidden)
+        {
+            return;
+        }
+
+        isUIHidden = false;
+
+        foreach (
+            KeyValuePair<GameObject, bool> pair
+            in previousActiveStates)
+        {
+            if (pair.Key != null)
+            {
+                pair.Key.SetActive(
+                    pair.Value
+                );
+            }
+        }
+
+        previousActiveStates.Clear();
+
+        if (uiHideClickArea != null)
+        {
+            uiHideClickArea.SetActive(false);
+        }
+
     }
 }

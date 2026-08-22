@@ -51,17 +51,11 @@ public class ChoiceController : MonoBehaviour
         }
     }
 
-    private void CreateChoiceButton(
-    ChoiceData choice,
-    Action<ChoiceData> onChoiceSelected)
+    private void CreateChoiceButton(ChoiceData choice, Action<ChoiceData> onChoiceSelected)
     {
-        Button button = Instantiate(
-            choiceButtonPrefab,
-            transform
-        );
+        Button button = Instantiate(choiceButtonPrefab, transform);
 
-        TMP_Text buttonText =
-            button.GetComponentInChildren<TMP_Text>();
+        TMP_Text buttonText = button.GetComponentInChildren<TMP_Text>();
 
         if (buttonText != null)
         {
