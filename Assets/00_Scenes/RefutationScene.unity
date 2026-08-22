@@ -1281,7 +1281,6 @@ GameObject:
   - component: {fileID: 1068760402}
   - component: {fileID: 1068760404}
   - component: {fileID: 1068760403}
-  - component: {fileID: 1068760405}
   m_Layer: 0
   m_Name: RefutationManager
   m_TagString: Untagged
@@ -1328,6 +1327,8 @@ MonoBehaviour:
   rightArrowBtn: {fileID: 668208334}
   successPopupUI: {fileID: 1748426135}
   evidenceSelectionPanel: {fileID: 2116241649}
+  evidenceSlotPrefab: {fileID: 0}
+  evidenceContentParent: {fileID: 0}
   standingController: {fileID: 1880061915}
   characterStandName: Character
   defaultWrongMessage: "\uC774\uAC83\uACFC\uB294 \uAD00\uB828 \uC5C6\uB294 \uAC83
@@ -1345,24 +1346,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RefutationDatabase
   refutationCsv: {fileID: 4900000, guid: 645e54414aa8a7a41857cc82bb9fac6c, type: 3}
---- !u!114 &1068760405
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1068760399}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0d74281f6e110a941af03fdb14aa6679, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::InventoryManager
-  acquiredItems:
-  - {fileID: 11400000, guid: b34adfb300f557748b54c324c0a2f6fb, type: 2}
-  - {fileID: 11400000, guid: 95f4f0bbb9fdad144bd66f6d103a8ad9, type: 2}
-  - {fileID: 11400000, guid: 0cc2fcd420aee7142ab4f1f644edc69e, type: 2}
-  slotIcons: []
-  noteInventoryUI: {fileID: 0}
 --- !u!1 &1077471917
 GameObject:
   m_ObjectHideFlags: 0
@@ -2114,6 +2097,52 @@ MonoBehaviour:
   - code: Character01
     standName: Character
     sprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+--- !u!1 &1919290692
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1919290694}
+  - component: {fileID: 1919290693}
+  m_Layer: 0
+  m_Name: InventoryManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1919290693
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1919290692}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d74281f6e110a941af03fdb14aa6679, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InventoryManager
+  acquiredItems: []
+  noteInventoryUI: {fileID: 0}
+--- !u!4 &1919290694
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1919290692}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 986.05133, y: 510.32242, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2030691887
 GameObject:
   m_ObjectHideFlags: 0
@@ -2258,4 +2287,5 @@ SceneRoots:
   - {fileID: 63742019}
   - {fileID: 553424619}
   - {fileID: 1068760402}
+  - {fileID: 1919290694}
   - {fileID: 1055409334}
