@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using TMPro;
 
 public class RefutationManager : MonoBehaviour
 {
@@ -18,6 +19,7 @@ public class RefutationManager : MonoBehaviour
     [SerializeField] private GameObject leftArrowBtn;
     [SerializeField] private GameObject rightArrowBtn;
     [SerializeField] private GameObject successPopupUI; // 논파 성공 팝업 UI
+    [SerializeField] private TextMeshProUGUI lifeText; // 플레이어 목숨 수 표시 텍스트
     
     [Header("인벤토리")]
     [SerializeField] private GameObject evidenceSelectionPanel; // 증거 선택 패널
@@ -36,32 +38,14 @@ public class RefutationManager : MonoBehaviour
     private bool isSelectingEvidence = false;
     private bool isWaitingForClick = false;
 
-    private void Awake()
-    {
-        Debug.Log("[디버그] RefutationManager의 Awake() 실행됨!");
-    }
-
-    private void OnEnable()
-    {   
-        Debug.Log("[디버그] RefutationManager가 켜졌습니다 (OnEnable)");
-    }
-
-    private void OnDisable()
-    {
-        // ★ using System.Diagnostics를 쓰지 않고 풀네임으로 적어 충돌을 막습니다.
-        Debug.Log("[디버그] 🚨 RefutationManager가 꺼진 원인 (스택 트레이스):\n" + new System.Diagnostics.StackTrace());
-    }
-
     private void Start()
     {
-        Debug.Log("[디버그] RefutationManager의 Start() 실행됨!");
         Time.timeScale = 1f; 
         StartTestimony();
     }
 
-    private void Update()
+private void Update()
     {
-        // 1. 오답 대사 출력 후 클릭을 기다리는 상태일 때
         if (isWaitingForClick)
         {
             if (Input.GetMouseButtonDown(0)) 
@@ -71,7 +55,6 @@ public class RefutationManager : MonoBehaviour
             return; 
         }
 
-        // 2. 증거 선택 창이 열려있지 않을 때만 조작 허용
         if (!isSelectingEvidence)
         {
             if (Input.GetKeyDown(KeyCode.LeftArrow)) OnClickPrev();
@@ -85,13 +68,13 @@ public class RefutationManager : MonoBehaviour
         }
         else
         {
-            if (Input.GetKeyDown(KeyCode.Escape))
+            if (Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
             {
                 CloseEvidenceSelection();
             }
         }
     }
-
+    
     // 논파 시작
     public void StartTestimony()
     {
@@ -99,6 +82,8 @@ public class RefutationManager : MonoBehaviour
         currentIndex = 0;
         isSelectingEvidence = false;
         isWaitingForClick = false;
+
+        UpdateLifeUI();
 
         if (refutationArrowsUI != null) refutationArrowsUI.SetActive(true);
         if (successPopupUI != null) successPopupUI.SetActive(false);
@@ -136,6 +121,15 @@ public class RefutationManager : MonoBehaviour
 
         if (leftArrowBtn != null) leftArrowBtn.SetActive(currentIndex > 0);
         if (rightArrowBtn != null) rightArrowBtn.SetActive(currentIndex < testimonyIdList.Count - 1);
+    }
+
+    // 플레이어 목숨 수 UI 업데이트
+    private void UpdateLifeUI()
+    {
+        if (lifeText != null)
+        {
+            lifeText.text = $"남은 목숨: {playerLife}";
+        }
     }
 
     // 이전 증언으로 이동
@@ -193,8 +187,12 @@ public class RefutationManager : MonoBehaviour
                     slotBtn.onClick.AddListener(() => OnSelectEvidence(capturedClueID));
                 }
 
-                // 이후 newSlotObj 내부의 Image 컴포넌트를 찾아 clue.clueIcon을 넣고
-                // Text 컴포넌트를 찾아 clue.clueName을 넣어주는 코드 작성 예정
+                Transform iconTransform = newSlotObj.transform.Find("ClueIcon");
+                if (iconTransform != null && clue.clueIcon != null)
+                {
+                    Image iconImage = iconTransform.GetComponent<Image>();
+                    if (iconImage != null) iconImage.sprite = clue.clueIcon;
+                }
             }
         }
     }
@@ -218,12 +216,11 @@ public class RefutationManager : MonoBehaviour
             if (successPopupUI != null) successPopupUI.SetActive(true);
             isSelectingEvidence = false;
             isWaitingForClick = false;
-            Debug.Log("논파 성공!");
         }
         else
         {
             playerLife--;
-            
+            UpdateLifeUI();
             string wrongMsg = GetWrongMessage(lockedTestimonyId, selectedEvidenceId);
             
             chatManager.ShowSingleLine("", wrongMsg, null); 
@@ -236,10 +233,16 @@ public class RefutationManager : MonoBehaviour
         }
     }
 
-    // 오답 대사 가져오기 (현재는 기본 오답 메시지 반환)
+    // 오답 대사 가져오기
     private string GetWrongMessage(string testimonyId, string evidenceId)
     {
-        // 이후 CSV에서 특정 오답 대사를 찾아오는 코드 추가 예정
+        string customMessage = refutationDatabase.GetCustomWrongMessage(testimonyId, evidenceId);
+        
+        if (!string.IsNullOrEmpty(customMessage))
+        {
+            return customMessage;
+        }
+        
         return defaultWrongMessage;
     }
 

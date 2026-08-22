@@ -8,22 +8,35 @@ public class RefutationDatabase : MonoBehaviour
     [Serializable]
     public class RefutationEntry
     {
-        public string id;
-        public string character;
-        public string dialogue;
-        public bool isWeakPoint;
-        public string correctEvidenceId;
-        public string expression;
+        public string id; // 증언 ID
+        public string character; // 캐릭터 이름
+        public string dialogue; // 증언 내용
+        public bool isWeakPoint; // 논파 포인트 여부
+        public string correctEvidenceId; // 논파에 필요한 증거 ID
+        public string expression; // 캐릭터 표정
     }
 
-    [Header("Refutation CSV")]
-    [SerializeField] private TextAsset refutationCsv;
+    [Serializable]
+    public class CustomWrongEntry
+    {
+        public string testimonyId; // 증언 ID
+        public string evidenceId; // 증거 ID
+        public string wrongMessage; // 오답 대사
+    }
 
-    private readonly Dictionary<string, RefutationEntry> table = new();
+    [Header("논파 CSV")]
+    [SerializeField] private TextAsset refutationCsv;
+    
+    [Header("오답 CSV")]
+    [SerializeField] private TextAsset customWrongCsv;
+
+    private readonly Dictionary<string, RefutationEntry> table = new();   
+    private readonly Dictionary<string, CustomWrongEntry> wrongTable = new();
 
     private void Awake()
     {
         LoadCsv();
+        LoadWrongCsv();
     }
 
     // 논파 데이터 가져오기
@@ -34,7 +47,19 @@ public class RefutationDatabase : MonoBehaviour
         return null;
     }
 
-    // CSV 로드 및 파싱
+    // 오답 대사 가져오기
+    public string GetCustomWrongMessage(string testimonyId, string evidenceId)
+    {
+        string key = $"{testimonyId}_{evidenceId}"; 
+        
+        if (wrongTable.TryGetValue(key, out var entry))
+        {
+            return entry.wrongMessage;
+        }
+        return null;
+    }
+
+    // CSV 파일 로드 및 파싱
     private void LoadCsv()
     {
         table.Clear();
@@ -61,7 +86,35 @@ public class RefutationDatabase : MonoBehaviour
         }
     }
 
-    // CSV 파싱 메서드
+    // 오답 CSV 파일 로드 및 파싱
+    private void LoadWrongCsv()
+    {
+        wrongTable.Clear();
+        if (customWrongCsv == null) return;
+
+        List<string[]> rows = ParseCsv(customWrongCsv.text);
+        for (int i = 1; i < rows.Count; i++)
+        {
+            string[] row = rows[i];
+            if (row.Length < 3) continue;
+
+            string tId = row[0].Trim();
+            string eId = row[1].Trim();
+            string msg = row[2].Trim();
+
+            if (string.IsNullOrEmpty(tId) || string.IsNullOrEmpty(eId)) continue;
+
+            string key = $"{tId}_{eId}";
+            wrongTable[key] = new CustomWrongEntry
+            {
+                testimonyId = tId,
+                evidenceId = eId,
+                wrongMessage = msg
+            };
+        }
+    }
+
+    // CSV 텍스트를 파싱하여 2차원 배열로 반환
     private List<string[]> ParseCsv(string csvText)
     {
         List<string[]> rows = new();
