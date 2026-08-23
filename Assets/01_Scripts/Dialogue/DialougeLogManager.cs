@@ -19,28 +19,25 @@ public class DialogueLogManager : MonoBehaviour
     private readonly List<LogEntry> logs =
         new List<LogEntry>();
 
-    public void AddLog(
-        string speaker,
-        string dialogue)
+    public void AddLog(string speaker, string dialogue)
     {
         if (string.IsNullOrWhiteSpace(dialogue))
         {
             return;
         }
 
-        LogEntry newLog = new LogEntry
-        {
-            speaker = speaker,
-            dialogue = dialogue
-        };
+        logs.Add(
+            new LogEntry
+            {
+                speaker = speaker, dialogue = dialogue
+            }
+        );
 
-        logs.Add(newLog);
     }
 
     public void ShowLog()
     {
         RefreshLog();
-
         if (logPanel != null)
         {
             logPanel.SetActive(true);
@@ -60,21 +57,24 @@ public class DialogueLogManager : MonoBehaviour
         if (logContent == null ||
             logTextPrefab == null)
         {
+            Debug.LogError(
+                "LogContent 또는 LogTextPrefab이 연결되지 않았습니다."
+            );
+
             return;
         }
 
+        // 기존 생성 로그 삭제
         foreach (Transform child in logContent)
         {
             Destroy(child.gameObject);
         }
 
+        // 저장된 로그 다시 생성
         foreach (LogEntry log in logs)
         {
             TMP_Text newText =
-                Instantiate(
-                    logTextPrefab,
-                    logContent
-                );
+                Instantiate(logTextPrefab,logContent);
 
             if (string.IsNullOrWhiteSpace(log.speaker))
             {
@@ -83,7 +83,7 @@ public class DialogueLogManager : MonoBehaviour
             else
             {
                 newText.text =
-                    $"{log.speaker}\n{log.dialogue}";
+                    $"{log.speaker} | {log.dialogue}";
             }
         }
     }

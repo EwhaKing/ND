@@ -31,7 +31,7 @@ using UnityEngine;
 public class ScenarioDataEditor : Editor
 {
     private ScenarioData scenarioData;
-
+    private readonly List<bool> stepFoldouts = new List<bool>();
     private void OnEnable()
     {
         scenarioData = (ScenarioData)target;
@@ -41,13 +41,19 @@ public class ScenarioDataEditor : Editor
     {
         serializedObject.Update();
 
-        scenarioData.scenarioId =
-            EditorGUILayout.TextField(
-                "Scenario ID",
-                scenarioData.scenarioId
-            );
+        scenarioData.scenarioId = EditorGUILayout.TextField("Scenario ID",scenarioData.scenarioId);
 
         EditorGUILayout.Space(10);
+
+        while (stepFoldouts.Count < scenarioData.steps.Count)
+        {
+            stepFoldouts.Add(true);
+        }
+
+        while (stepFoldouts.Count > scenarioData.steps.Count)
+        {
+            stepFoldouts.RemoveAt(stepFoldouts.Count - 1);
+        }
 
         for (int i = 0; i < scenarioData.steps.Count; i++)
         {
@@ -57,27 +63,37 @@ public class ScenarioDataEditor : Editor
 
             EditorGUILayout.BeginHorizontal();
 
-            EditorGUILayout.LabelField(
-                $"Step {i + 1}",
-                EditorStyles.boldLabel
-            );
+            stepFoldouts[i] =
+                EditorGUILayout.Foldout(
+                    stepFoldouts[i],
+                    $"Step {i + 1} - {step.stepType}",
+                    true
+                );
 
-           
             GUI.enabled = i > 0;
 
             if (GUILayout.Button("up", GUILayout.Width(30)))
             {
                 SwapSteps(i, i - 1);
+
+                bool temp = stepFoldouts[i];
+                stepFoldouts[i] = stepFoldouts[i - 1];
+                stepFoldouts[i - 1] = temp;
+
                 GUI.enabled = true;
                 break;
             }
 
-          
             GUI.enabled = i < scenarioData.steps.Count - 1;
 
             if (GUILayout.Button("down", GUILayout.Width(40)))
             {
                 SwapSteps(i, i + 1);
+
+                bool temp = stepFoldouts[i];
+                stepFoldouts[i] = stepFoldouts[i + 1];
+                stepFoldouts[i + 1] = temp;
+
                 GUI.enabled = true;
                 break;
             }
@@ -87,21 +103,26 @@ public class ScenarioDataEditor : Editor
             if (GUILayout.Button("Remove", GUILayout.Width(50)))
             {
                 scenarioData.steps.RemoveAt(i);
+                stepFoldouts.RemoveAt(i);
+
                 EditorUtility.SetDirty(scenarioData);
                 break;
             }
 
             EditorGUILayout.EndHorizontal();
 
-            step.stepType =
-                (ScenarioStepType)EditorGUILayout.EnumPopup(
-                    "Step Type",
-                    step.stepType
-                );
+            if (stepFoldouts[i])
+            {
+                EditorGUILayout.Space(4);
 
-            EditorGUILayout.Space(4);
+                step.stepType =
+                    (ScenarioStepType)
+                    EditorGUILayout.EnumPopup("Step Type",step.stepType);
 
-            DrawStepFields(step);
+                EditorGUILayout.Space(4);
+
+                DrawStepFields(step);
+            }
 
             EditorGUILayout.EndVertical();
             EditorGUILayout.Space(5);
@@ -110,6 +131,7 @@ public class ScenarioDataEditor : Editor
         if (GUILayout.Button("Add Step"))
         {
             scenarioData.steps.Add(new ScenarioStep());
+            stepFoldouts.Add(true);
         }
 
         if (GUI.changed)
