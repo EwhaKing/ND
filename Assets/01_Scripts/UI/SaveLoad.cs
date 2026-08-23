@@ -25,13 +25,10 @@ using UnityEngine.UI;
 /// - 저장 이미지 파일은 Application.persistentDataPath/SaveImages 경로에서 불러옴
 ///
 /// TODO:
-/// - Initalize 오타를 Initialize로 수정 검토
 /// - 저장 시 scenarioIndex, branchIndex 등 실제 게임 진행 데이터 저장 기능 연결 필요
 /// - Load 모드에서 저장 데이터를 실제로 불러오는 기능 추가 필요
-/// - 기존 저장 슬롯을 덮어쓸 수 있는지 정책 정리 필요
 /// - 저장 슬롯에 챕터명/시나리오 정보를 표시하도록 Chapter 텍스트 저장 추가
 /// - PlayerPrefs.Save() 호출 여부 검토
-/// - 저장 이미지가 없을 때 기본 이미지/빈 슬롯 상태로 초기화하는 처리 추가
 /// </summary>
 public enum SaveLoadType
 {
@@ -94,13 +91,16 @@ public class SaveLoad : MonoBehaviour
         {
             for (int i = 0; i < m_data.Count; i++)
             {
+                int index = i;
                 m_data[i].MainButton.onClick.RemoveAllListeners();
+                m_data[i].MainButton.onClick.AddListener(() => Save(index));
+
                 if (string.IsNullOrEmpty(PlayerPrefs.GetString($"#{i}_Date", "")))
                 {
                     m_data[i].PlusImage.SetActive(true);
                     m_data[i].Date.gameObject.SetActive(false);
                     m_data[i].Chapter.gameObject.SetActive(false);
-                    int index = i;
+                    
                     m_data[index].MainButton.onClick.AddListener(() => Save(index));
                 }
                 else
@@ -110,6 +110,7 @@ public class SaveLoad : MonoBehaviour
                 }
             }
         }
+
         else if(type==SaveLoadType.Load)
         {
             for (int i = 0; i < m_data.Count; i++)
@@ -122,15 +123,16 @@ public class SaveLoad : MonoBehaviour
 
                 if (!string.IsNullOrEmpty(PlayerPrefs.GetString($"#{i}_Date", "")))
                 {
-                    m_data[i].MainButton.interactable=true;
+                    m_data[i].MainButton.interactable = true;
                     LoadImages(i);
                 }
                 else
                 {
-                    m_data[i].MainButton.interactable=false;
+                    m_data[i].MainButton.interactable = false;
                 }
             }
         }
+        
     }
 
     void LoadImages(int index)
@@ -141,14 +143,14 @@ public class SaveLoad : MonoBehaviour
         LoadSaveImage(index);
     }
 
-    private void LoadSaveImage(int index)
+    void LoadSaveImage(int index)
     {
         string path = PlayerPrefs.GetString($"#{index}_ImagePath", "");
-
         if (string.IsNullOrEmpty(path) || !File.Exists(path))
         {
+            m_data[index].SaveMainImage.gameObject.SetActive(false);
             return;
-        }///수정해야할 부분
+        }
 
         byte[] bytes = System.IO.File.ReadAllBytes(path);
 
@@ -156,23 +158,31 @@ public class SaveLoad : MonoBehaviour
         tex.LoadImage(bytes);
 
         Sprite sprite = Sprite.Create(
-            tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+        tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+
         m_data[index].SaveMainImage.gameObject.SetActive(true);
         m_data[index].SaveMainImage.sprite=sprite;
 
+
     }
-
-
 
     public void Save(int value)
     {
-        string date = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm");
+        string date = DateTime.Now.ToString("yyyy.MM.dd HH:mm");
 
         PlayerPrefs.SetString($"#{value}_Date", date);
+
+        if (InGame.Instance != null)
+        {
+            PlayerPrefs.SetString($"#{value}_Scenario", InGame.Instance.SaveBranch());
+            InGame.Instance.Capture(value, () => Initalize(SaveLoadType.Save));
+        }
+        else
+        {
+            Debug.LogWarning("InGame.Instance가 null 상태입니다. UI만 갱신합니다.");
+            Initalize(SaveLoadType.Save);
+        }
         
-        //PlayerPrefs.SetString($"#{value}_Scenario",InGame.Instance.SaveBranch());
-        //InGame.Instance.Capture(value, ()=> Initalize(SaveLoadType.Save));
-        Initalize(SaveLoadType.Save);
     }
 
 }

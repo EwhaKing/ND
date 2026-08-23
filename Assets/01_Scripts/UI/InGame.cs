@@ -22,34 +22,41 @@ using UnityEngine;
 /// - 저장 이미지 경로를 PlayerPrefs에 기록하여 SaveLoad에서 불러올 수 있도록 함
 ///
 /// TODO:
-/// - Awake에서 InGame.Instance를 할당하는 Singleton 초기화 추가 필요
-/// - SetNoneCaptureActive() 구현 필요
 /// - 저장 시 시나리오/분기 데이터도 함께 저장하도록 SaveLoad와 연결 필요
-/// - 캡처 후 생성된 Texture2D 메모리 해제 처리 검토
 /// - GameFlowManager / ChapterManager가 생기면 scenarioIndex, branchIndex 관리 위치 재검토
 /// </summary>
 public class InGame : MonoBehaviour
 {
     [Header("## UI")]
     [SerializeField] private Transform mainCanvas;
+    [SerializeField] private GameObject[] noneCaptureUIS;
+
+    List<GameObject> NoneCaptureSave = new();
+
+    [SerializeField] private GameObject saveLoadPrefab; 
+
 
     public static InGame Instance = null;
     public int scenarioIndex = 0;
     public int branchIndex = 0;
 
-    public string SaveBranch(){
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    public string SaveBranch()
+    {
         return $"{scenarioIndex}#{branchIndex}";
     }
-    public void Onsave()
-    {
-        SetSaveLoadPanel(SaveLoadType.Save);
-    }
 
-    public void OnLoad(){
-        SetSaveLoadPanel(SaveLoadType.Load);
-    }
-
-    [SerializeField] private GameObject saveLoadPrefab; 
 
     private void SetSaveLoadPanel(SaveLoadType type)
     {
@@ -59,27 +66,59 @@ public class InGame : MonoBehaviour
     script.Initalize(type);
     }
 
-    public void Capture(int index, Action action = null){
+
+    public void Capture(int index, Action action = null)
+    {
         StartCoroutine(CaptureUI(index, action));
     }
 
-    IEnumerator CaptureUI(int index, Action action = null){
-        //NoneCaptureSave.Clear();
-        SetNoneCaptureActive(false);
+    IEnumerator CaptureUI(int index, Action action = null)
+    {
+        SetNoneCaptureAlpha(0f);
 
         yield return new WaitForEndOfFrame();
 
         Texture2D tex = ScreenCapture.CaptureScreenshotAsTexture();
 
-        SetNoneCaptureActive(true);
+        SetNoneCaptureAlpha(1f);
+
         SaveCapturedImage(index, tex);
+        Destroy(tex);
+
         action?.Invoke();
     }
 
-    void SaveCapturedImage(int index, Texture2D tex){
+    void SetNoneCaptureAlpha(float alpha)
+    {
+        int layer = LayerMask.NameToLayer("NoneCapture");
+        
+        Transform[] allTransforms = mainCanvas.GetComponentsInChildren<Transform>(true);
+
+        foreach (Transform T in allTransforms)
+        {
+            if (T.gameObject.layer == layer)
+            {
+                CanvasGroup group = T.GetComponent<CanvasGroup>();
+                if (group == null)
+                {
+                    group = T.gameObject.AddComponent<CanvasGroup>();
+                }
+
+                group.alpha = alpha;                           
+                group.blocksRaycasts = (alpha > 0f);           
+                group.interactable = (alpha > 0f);             
+            }
+        }
+    }
+
+
+
+    void SaveCapturedImage(int index, Texture2D tex)
+    {
         byte[] png = tex.EncodeToPNG();
+
         string dir = Application.persistentDataPath + "/SaveImages";
-        if (!System.IO.Directory.Exists(dir))
+        if(!System.IO.Directory.Exists(dir))
             System.IO.Directory.CreateDirectory(dir);
 
         string path = $"{dir}/save_{index}.png";
@@ -88,9 +127,14 @@ public class InGame : MonoBehaviour
         PlayerPrefs.SetString($"#{index}_ImagePath",path);
     }
 
-    void SetNoneCaptureActive(bool active)//캡처할때 UI안나오게 하는것
+    public void Onsave()
     {
-
+        SetSaveLoadPanel(SaveLoadType.Save);
     }
+
+    public void OnLoad(){
+        SetSaveLoadPanel(SaveLoadType.Load);
+    }
+
 
 }
