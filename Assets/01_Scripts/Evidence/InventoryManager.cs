@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 /// <summary>
 /// InventoryManager
@@ -30,6 +29,7 @@ using UnityEngine.UI;
 /// - 인벤토리 슬롯 클릭 시 단서 상세 설명 출력 기능 연결
 /// - Singleton 구조 유지 여부 검토
 /// </summary>
+
 public class InventoryManager : MonoBehaviour
 {
     public static InventoryManager Instance;
@@ -38,28 +38,32 @@ public class InventoryManager : MonoBehaviour
     public List<ClueData> acquiredItems = new List<ClueData>();
     private Dictionary<string, ClueData> acquiredItemsDict = new Dictionary<string, ClueData>();
 
-    [Header("인벤토리 아이콘 및 UI")]
-    public Image[] slotIcons; 
-    public NoteInventoryUI noteInventoryUI;
+    [Header("인벤토리 UI")]
+    public NoteInventoryUI noteInventoryUI; 
 
     private void Awake()
     {
-        if (Instance == null) Instance = this;
+        if (Instance == null) 
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else if (Instance != this)
+        {
+            Destroy(gameObject);
+        }
     }
 
     private void Start()
     {
-        // 인벤토리 UI 초기화
         UpdateInventoryUI();
     }
 
     // 아이템 추가 기능
-    public string AddItem(ClueData itemData, bool updateUI = true)
+    public void AddItem(ClueData itemData, bool updateUI = true)
     {
-        if (itemData == null) return null;
+        if (itemData == null) return;
 
-        string combineMessage = null;
-        
         if (!acquiredItemsDict.ContainsKey(itemData.clueID))
         {
             acquiredItems.Add(itemData);
@@ -70,14 +74,6 @@ public class InventoryManager : MonoBehaviour
                 InvestigationManager.Instance.UpdateProgress(itemData, updateUI);
             }
 
-            combineMessage = CheckAutoCombine(itemData, updateUI); // 합성 가능 여부 확인 및 처리
-            
-            if (updateUI)
-            {
-                UpdateInventoryUI();
-            }
-
-            //필드에서 아이템을 클릭해 인벤토리에 추가될 때 팝업 출력
             if (ClueDetailPopup.Instance != null)
             {
                 ClueDetailPopup.Instance.ShowPopup(itemData);
@@ -87,10 +83,7 @@ public class InventoryManager : MonoBehaviour
             {
                 UpdateInventoryUI();
             }
-
         }
-
-        return combineMessage;
     }
 
     // 아이템 보유 검사 기능
@@ -101,77 +94,20 @@ public class InventoryManager : MonoBehaviour
         return acquiredItemsDict.ContainsKey(itemID);
     }
 
-    // 자동 조합 검사 및 처리 기능
-    private string CheckAutoCombine(ClueData newItem, bool updateUI)
-    {
-        ClueData partnerItem = null;
-
-        foreach (ClueData existingItem in acquiredItems)
-        {
-            if (existingItem == newItem) 
-            {
-                continue;
-            }
-
-            if (newItem.canCombine && newItem.combineTarget == existingItem)
-            {
-                partnerItem = existingItem;
-                break;
-            }
-        }
-
-        if (partnerItem != null)
-        {
-            ClueData resultItem = newItem.combineResult;
-
-            if (resultItem != null)
-            {
-                acquiredItemsDict.Remove(newItem.clueID);
-                acquiredItemsDict.Remove(partnerItem.clueID);
-                acquiredItems.Remove(newItem);
-                acquiredItems.Remove(partnerItem);
-
-                acquiredItemsDict.Add(resultItem.clueID, resultItem);
-                acquiredItems.Add(resultItem);
-
-                if (InvestigationManager.Instance != null)
-                {
-                    InvestigationManager.Instance.UpdateProgress(resultItem, updateUI);
-                }
-
-                string customText = newItem.combineText; 
-
-                return customText;
-            }
-        }
-
-        return null;
-    }
-
     // 인벤토리 UI 업데이트 기능
     public void UpdateInventoryUI()
     {
-        // 1. 기존 상단/메인 인벤토리 아이콘 갱신
-        if (slotIcons != null && slotIcons.Length > 0)
-        {
-            for (int i = 0; i < slotIcons.Length; i++)
-            {
-                if (i < acquiredItems.Count)
-                {
-                    slotIcons[i].sprite = acquiredItems[i].clueIcon;
-                    slotIcons[i].gameObject.SetActive(true);
-                }
-                else
-                {
-                    slotIcons[i].gameObject.SetActive(false);
-                }
-            }
-        }
-
-        // 2. 우측 인벤토리 UI도 동시에 새로고침
         if (noteInventoryUI != null)
         {
             noteInventoryUI.RefreshInventorySlots();
         }
+    }
+    
+    // 인벤토리 초기화 기능
+    public void ClearInventory()
+    {
+        acquiredItems.Clear();
+        acquiredItemsDict.Clear();
+        UpdateInventoryUI();
     }
 }
