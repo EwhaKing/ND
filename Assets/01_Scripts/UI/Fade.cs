@@ -52,8 +52,16 @@ public class Fade : MonoBehaviour
         }
 
         SetAlpha(to);
-        if(completeDelay>0f)
-            yield return new WaitForSeconds(completeDelay);
+        
+        if (completeDelay > 0f)
+        {
+            yield return new WaitForSecondsRealtime(completeDelay);
+        }
+
+        if (to <= 0f)
+        {
+            fadeImage.gameObject.SetActive(false);
+        }
         coroutine = null;
         onComplete?.Invoke();
     }

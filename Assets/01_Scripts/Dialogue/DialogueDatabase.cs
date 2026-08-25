@@ -101,10 +101,10 @@ public class DialogueDatabase : MonoBehaviour
         {
             string[] row = rows[i];
 
-            if (row.Length < 3)
+            if (row.Length < 4)
             {
                 Debug.LogWarning(
-                    $"{dialogueCsv.name}의 {i + 1}번째 형식이 잘못됨."
+                    $"{dialogueCsv.name}의 {i + 1}번째 형식이 잘못됨. 열 개수: {row.Length}"
                 );
                 continue;
             }
@@ -112,7 +112,11 @@ public class DialogueDatabase : MonoBehaviour
             string id = row[0].Trim();
             string speaker = row[1].Trim();
             string dialogue = row[2].Trim();
-            string expressionCode = row[3].Trim();
+
+            string expressionCode = row.Length >= 4
+                ? row[3].Trim()
+                : string.Empty;
+
             string standName = row.Length >= 5
                 ? row[4].Trim()
                 : string.Empty;

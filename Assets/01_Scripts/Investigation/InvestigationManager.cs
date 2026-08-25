@@ -178,7 +178,14 @@ public class InvestigationManager : MonoBehaviour
     // 조사 종료 버튼 클릭 시 호출되는 메서드
     public void Finish()
     {
-        SceneManager.LoadScene("RefutationScene");
-    }
+        if (GameProgressManager.Instance != null)
+        {
+            GameProgressManager.Instance.OnInvestigationFinished();
+        }
+        else
+        {
+            Debug.LogError("GameProgressManager가 없습니다.");
+        }
     
+    }
 }
