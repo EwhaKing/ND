@@ -114,11 +114,6 @@ public class InventoryManager : MonoBehaviour
             );
         }
 
-        if (ClueDetailPopup.Instance != null)
-        {
-            ClueDetailPopup.Instance.ShowPopup(itemData);
-        }
-
         if (updateUI)
         {
             UpdateInventoryUI();

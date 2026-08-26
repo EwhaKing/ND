@@ -75,36 +75,6 @@ public class InvestigationManager : MonoBehaviour
         {
             finishButton.SetActive(false);
         }
-
-        // 맵에 존재하는 모든 ClueInteract 오브젝트를 찾아 clueObjectMap에 등록
-        if (cluesParent != null)
-        {
-            ClueInteract[] allCluesOnMap = cluesParent.GetComponentsInChildren<ClueInteract>(true);
-            
-            foreach (ClueInteract clue in allCluesOnMap)
-            {
-                if (clue.clueData != null)
-                {
-                    // 1. 오브젝트 매핑 사전 등록
-                    clueObjectMap[clue.clueData] = clue.gameObject;
-
-                    // 2. 단서 자동 수집 및 전체/핵심 단서 개수 세기 (중복 방지)
-                    if (!stageClues.Contains(clue.clueData))
-                    {
-                        stageClues.Add(clue.clueData);
-
-                        if (clue.clueData.clueType == ClueType.Core) 
-                        {
-                            totalCoreCount++;
-                        }
-                        
-                        totalProgressCount++;
-                    }
-                }
-            }
-        }
-
-        UpdateUI();
     }
 
     // UI 업데이트 메서드
@@ -120,7 +90,9 @@ public class InvestigationManager : MonoBehaviour
             coreCountText.text = $"핵심 단서: {foundCoreCount} / {totalCoreCount}";
         }
 
-        if (foundCoreCount >= totalCoreCount && !isFinishabled)
+        if (totalCoreCount > 0 &&
+            foundCoreCount >= totalCoreCount &&
+            !isFinishabled)
         {
             EnableToFinish();
         }
@@ -187,5 +159,71 @@ public class InvestigationManager : MonoBehaviour
             Debug.LogError("GameProgressManager가 없습니다.");
         }
     
+    }
+
+    public void InitializeStage(Transform newCluesParent)
+    {
+        cluesParent = newCluesParent;
+
+        // 이전 Stage 데이터 초기화
+        clueObjectMap.Clear();
+        stageClues.Clear();
+        countedClues.Clear();
+
+        totalCoreCount = 0;
+        totalProgressCount = 0;
+
+        foundCoreCount = 0;
+        foundProgressCount = 0;
+
+        progressRate = 0;
+        isFinishabled = false;
+
+        if (finishButton != null)
+        {
+            finishButton.SetActive(false);
+        }
+
+        if (cluesParent == null)
+        {
+            Debug.LogError("CluesParent가 없습니다.");
+            return;
+        }
+
+        ClueInteract[] allCluesOnMap =
+            cluesParent.GetComponentsInChildren<ClueInteract>(true);
+
+        foreach (ClueInteract clue in allCluesOnMap)
+        {
+            if (clue.clueData == null)
+            {
+                continue;
+            }
+
+            clueObjectMap[clue.clueData] =
+                clue.gameObject;
+
+            if (stageClues.Contains(clue.clueData))
+            {
+                continue;
+            }
+
+            stageClues.Add(clue.clueData);
+
+            if (clue.clueData.clueType == ClueType.Core)
+            {
+                totalCoreCount++;
+            }
+
+            totalProgressCount++;
+        }
+
+        Debug.Log(
+            $"조사 Stage 초기화 완료 / " +
+            $"전체 단서={totalProgressCount}, " +
+            $"핵심 단서={totalCoreCount}"
+        );
+
+        UpdateUI();
     }
 }

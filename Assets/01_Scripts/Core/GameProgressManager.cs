@@ -49,8 +49,7 @@ public class GameProgressManager : MonoBehaviour
     [Header("Scene Names")]
     [SerializeField] private string lobbySceneName = "LobbyScene";
     [SerializeField] private string chatSceneName = "ChatScene";
-    [SerializeField] private string findRoofSceneName = "FindRoofScene";
-    [SerializeField] private string findGroundSceneName = "FindGroundScene";
+    [SerializeField] private string findSceneName = "FindScene";
     [SerializeField] private string refutationSceneName = "RefutationScene";
     [SerializeField] private string judgeSceneName = "JudgeScene";
     [SerializeField] private string miniGameSceneName = "MiniGameScene";
@@ -108,22 +107,28 @@ public void GoNext()
 
         case GameFlowStep.Chapter1Stage1Dialogue:
             currentStep = GameFlowStep.Chapter1Stage2Dialogue;
-            SceneManager.LoadScene(chatSceneName);
+            SceneManager.LoadScene(findSceneName);
             break;
 
         case GameFlowStep.Chapter1Stage2Dialogue:
             currentStep = GameFlowStep.InvestigationRoof;
-            SceneManager.LoadScene(findRoofSceneName);
+            SceneManager.LoadScene(findSceneName);
             break;
 
         case GameFlowStep.InvestigationRoof:
             currentStep = GameFlowStep.InvestigationGround;
-            SceneManager.LoadScene(findGroundSceneName);
+
+            SceneManager.LoadScene(
+                findSceneName
+            );
             break;
 
         case GameFlowStep.InvestigationGround:
             currentStep = GameFlowStep.Refutation;
-            SceneManager.LoadScene(refutationSceneName);
+
+            SceneManager.LoadScene(
+                refutationSceneName
+            );
             break;
 
         // 나머지...
