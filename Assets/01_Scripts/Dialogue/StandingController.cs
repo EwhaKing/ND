@@ -42,12 +42,18 @@ public class StandingController : MonoBehaviour
 
         for (int i = 0; i < images.Length; i++)
         {
-            bool hasStand = i < stands.Length && !string.IsNullOrWhiteSpace(stands[i].standName);
+            bool hasStand =
+                i < stands.Length &&
+                stands[i] != null &&
+                !string.IsNullOrWhiteSpace(stands[i].standName);
 
             images[i].gameObject.SetActive(hasStand);
 
             if (!hasStand)
             {
+                // images[i]와 currentStands[i]의 인덱스를 맞추기 위해
+                // 빈 자리도 null로 저장
+                currentStands.Add(null);
                 continue;
             }
 
@@ -57,17 +63,19 @@ public class StandingController : MonoBehaviour
                 FindDefaultSprite(stands[i].standName);
 
             images[i].sprite = defaultSprite;
-            images[i].rectTransform.sizeDelta = new Vector2(500f, 500f);
             images[i].color = Color.white;
 
             if (stands.Length > 1)
             {
                 images[i].rectTransform.localPosition =
-                    i == 0 ? new Vector2(-450f, -50f) : new Vector2(450f, -50f);
+                    i == 0
+                        ? new Vector2(-450f, -75f)
+                        : new Vector2(450f, -75f);
             }
             else
             {
-                images[i].rectTransform.localPosition = Vector2.zero;
+                images[i].rectTransform.localPosition =
+                    new Vector2(0f, -75f);
             }
         }
     }
@@ -96,9 +104,7 @@ public class StandingController : MonoBehaviour
 
     public void SetColor(string speakerStandName)
     {
-        int count = Mathf.Min(currentStands.Count, images.Length);
-
-        if (count == 0)
+        if (currentStands.Count == 0)
         {
             return;
         }
@@ -106,15 +112,27 @@ public class StandingController : MonoBehaviour
         bool isNarration =
             string.IsNullOrWhiteSpace(speakerStandName);
 
-        for (int i = 0; i < count; i++)
+        for (int i = 0; i < images.Length; i++)
         {
+            if (i >= currentStands.Count)
+            {
+                continue;
+            }
+
+            StandStep stand = currentStands[i];
+
+            if (stand == null)
+            {
+                continue;
+            }
+
             if (images[i] == null ||
                 !images[i].gameObject.activeSelf)
             {
                 continue;
             }
 
-            // 나레이션이면 모두 회색
+            // 나레이션이면 전부 어둡게
             if (isNarration)
             {
                 images[i].color = Color.gray;
@@ -122,13 +140,22 @@ public class StandingController : MonoBehaviour
             }
 
             bool isCurrentSpeaker =
-                currentStands[i].standName ==
-                speakerStandName;
+                string.Equals(
+                    stand.standName.Trim(),
+                    speakerStandName.Trim(),
+                    System.StringComparison.OrdinalIgnoreCase
+                );
 
             images[i].color =
                 isCurrentSpeaker
                     ? Color.white
                     : Color.gray;
+
+            Debug.Log(
+                $"[StandingColor] 화자={speakerStandName} / " +
+                $"스탠딩={stand.standName} / " +
+                $"{(isCurrentSpeaker ? "WHITE" : "GRAY")}"
+            );
         }
     }
     public void Hide()
@@ -148,7 +175,6 @@ public class StandingController : MonoBehaviour
             Debug.LogError(
                 "변경할 캐릭터 이름이 비어 있습니다."
             );
-
             return;
         }
 
@@ -157,13 +183,22 @@ public class StandingController : MonoBehaviour
             Debug.LogError(
                 $"'{standName}'에게 적용할 Sprite가 없습니다."
             );
-
             return;
         }
 
         for (int i = 0; i < currentStands.Count; i++)
         {
-            if (currentStands[i].standName != standName)
+            StandStep stand = currentStands[i];
+
+            if (stand == null)
+            {
+                continue;
+            }
+
+            if (!string.Equals(
+                    stand.standName,
+                    standName,
+                    System.StringComparison.OrdinalIgnoreCase))
             {
                 continue;
             }
@@ -181,6 +216,7 @@ public class StandingController : MonoBehaviour
             $"현재 화면에 표시 중인 스탠딩을 찾지 못했습니다: {standName}"
         );
     }
+    
     public void SetExpression(string expressionCode)
     {
         if (string.IsNullOrWhiteSpace(expressionCode))

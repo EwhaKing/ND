@@ -41,7 +41,8 @@ public enum ScenarioStepType
     StandingHide,
     Choice,
     CGShow,
-    CGHide
+    CGHide,
+    Fade
 }
 
 /// <summary>
@@ -90,6 +91,10 @@ public class ScenarioStep
 
     [Header("CG")]
     public Sprite cgSprite;
+
+    [Header("Fade")]
+    public float fadeDuration = 0.5f;
+    public float fadeHoldDuration = 1f;
 }
 
 /// <summary>
