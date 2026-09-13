@@ -75,6 +75,11 @@ public class InvestigationManager : MonoBehaviour
         {
             finishButton.SetActive(false);
         }
+
+        if (cluesParent != null)
+        {
+            InitializeStage(cluesParent);
+        }
     }
 
     // UI 업데이트 메서드
