@@ -238,5 +238,6 @@ public class MiniGameDialogue : MonoBehaviour
         currentSpot = null;
         currentDialogueIndex = 0;
         currentPhase = DialoguePhase.None;
+        MiniGameManager.Instance.CheckAllSolved();
     }
 }

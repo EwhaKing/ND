@@ -6171,11 +6171,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameProgressManager
   forceSkipForTesting: 1
   playCount: 1
-  currentStep: 0
+  currentStep: 3
   lobbySceneName: LobbyScene
   chatSceneName: ChatScene
-  findRoofSceneName: FindRoofScene
-  findGroundSceneName: FindGroundScene
+  findSceneName: FindScene
   refutationSceneName: RefutationScene
   judgeSceneName: JudgeScene
   miniGameSceneName: MiniGameScene
@@ -8773,8 +8772,13 @@ MonoBehaviour:
   fadeController: {fileID: 2056223596}
   standingController: {fileID: 931518902}
   prologueScenario: {fileID: 11400000, guid: 1b17f20cf8dc8e2438960fc67a72c958, type: 2}
-  chapter1Stage1Scenario: {fileID: 11400000, guid: eb80967a6d677f846882326bad290a3f, type: 2}
-  chapter1Stage2Scenario: {fileID: 11400000, guid: 25644f9e5b27789499da7a0c61d8dcc5, type: 2}
+  chapter1PrologueScenario: {fileID: 11400000, guid: eb80967a6d677f846882326bad290a3f, type: 2}
+  chapter1Stage1Scenario: {fileID: 11400000, guid: 25644f9e5b27789499da7a0c61d8dcc5, type: 2}
+  chapter1Stage1Refutation1SuccessScenario: {fileID: 11400000, guid: c1f76e32cbaa3c84681c7b4c622a2afb, type: 2}
+  chapter1Stage1ConclutionSScenario: {fileID: 11400000, guid: 4750b2b4c32bbca47b9dbaab5bd04751, type: 2}
+  chapter1Stage1ConclutionFScenario: {fileID: 11400000, guid: ad0ed25dfa5d72e4abdb5cef4f9600f5, type: 2}
+  chapter1Stage2Scenario: {fileID: 11400000, guid: eb9bf2097d95a024898d6002a939ac51, type: 2}
+  chapter1Stage2RefutationSuccessScenario: {fileID: 11400000, guid: a087068733682bb45ba5b974ab8fce0a, type: 2}
   fadeDuration: 0.5
   blackHoldDuration: 0.3
 --- !u!4 &2103180771
