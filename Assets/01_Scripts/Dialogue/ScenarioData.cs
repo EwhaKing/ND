@@ -53,7 +53,8 @@ public enum ChoiceActionType
 {
     NextStep,
     ReactionThenNext,
-    LoadScene
+    LoadScene,
+    JumpToStep
 }
 
 /// <summary>
@@ -112,6 +113,7 @@ public class ChoiceData
         new List<ReactionStep>();
 
     public string targetScene;
+    public int targetStepIndex;
 }
 
 /// <summary>

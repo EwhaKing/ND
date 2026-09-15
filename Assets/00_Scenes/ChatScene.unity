@@ -8772,8 +8772,8 @@ MonoBehaviour:
   fadeController: {fileID: 2056223596}
   standingController: {fileID: 931518902}
   prologueScenario: {fileID: 11400000, guid: 1b17f20cf8dc8e2438960fc67a72c958, type: 2}
-  chapter1PrologueScenario: {fileID: 11400000, guid: eb80967a6d677f846882326bad290a3f, type: 2}
-  chapter1Stage1Scenario: {fileID: 11400000, guid: 25644f9e5b27789499da7a0c61d8dcc5, type: 2}
+  chapter1PrologueScenario: {fileID: 11400000, guid: 20ca65d9f4226934784d2876f776d54a, type: 2}
+  chapter1Stage1Scenario: {fileID: 11400000, guid: eb80967a6d677f846882326bad290a3f, type: 2}
   chapter1Stage1Refutation1SuccessScenario: {fileID: 11400000, guid: c1f76e32cbaa3c84681c7b4c622a2afb, type: 2}
   chapter1Stage1ConclutionSScenario: {fileID: 11400000, guid: 4750b2b4c32bbca47b9dbaab5bd04751, type: 2}
   chapter1Stage1ConclutionFScenario: {fileID: 11400000, guid: ad0ed25dfa5d72e4abdb5cef4f9600f5, type: 2}
