@@ -2071,7 +2071,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d74281f6e110a941af03fdb14aa6679, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InventoryManager
-  acquiredItems: []
+  acquiredItems:
+  - {fileID: 11400000, guid: b34adfb300f557748b54c324c0a2f6fb, type: 2}
+  - {fileID: 11400000, guid: 95f4f0bbb9fdad144bd66f6d103a8ad9, type: 2}
+  - {fileID: 11400000, guid: 0cc2fcd420aee7142ab4f1f644edc69e, type: 2}
   noteInventoryUI: {fileID: 0}
 --- !u!4 &1919290694
 Transform:
