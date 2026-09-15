@@ -96,44 +96,51 @@ public class GameProgressManager : MonoBehaviour
         SceneManager.LoadScene(chatSceneName);
     }
 
-public void GoNext()
-{
-    switch (currentStep)
+    public void GoNext()
     {
-        case GameFlowStep.PrologueDialogue:
-            currentStep = GameFlowStep.Chapter1Stage1Dialogue;
-            SceneManager.LoadScene(chatSceneName);
-            break;
+        switch (currentStep)
+        {
+            case GameFlowStep.PrologueDialogue:
+                currentStep = GameFlowStep.Chapter1PrologueDialogue;
+                SceneManager.LoadScene(chatSceneName);
+                break;
 
-        case GameFlowStep.Chapter1Stage1Dialogue:
-            currentStep = GameFlowStep.Chapter1Stage2Dialogue;
-            SceneManager.LoadScene(findSceneName);
-            break;
+            case GameFlowStep.Chapter1PrologueDialogue:
+                currentStep = GameFlowStep.InvestigationRoof;
+                SceneManager.LoadScene(findSceneName);
+                break;
 
-        case GameFlowStep.Chapter1Stage2Dialogue:
-            currentStep = GameFlowStep.InvestigationRoof;
-            SceneManager.LoadScene(findSceneName);
-            break;
+            case GameFlowStep.InvestigationRoof:
+                currentStep = GameFlowStep.InvestigationGround;
+                SceneManager.LoadScene(findSceneName);
+                break;
 
-        case GameFlowStep.InvestigationRoof:
-            currentStep = GameFlowStep.InvestigationGround;
+            case GameFlowStep.InvestigationGround:
+                currentStep = GameFlowStep.Chapter1Stage1Dialogue;
 
-            SceneManager.LoadScene(
-                findSceneName
-            );
-            break;
+                SceneManager.LoadScene(chatSceneName);
+                break;
 
-        case GameFlowStep.InvestigationGround:
-            currentStep = GameFlowStep.Refutation;
+            case GameFlowStep.Chapter1Stage1Dialogue:
+                currentStep = GameFlowStep.Refutation;
 
-            SceneManager.LoadScene(
-                refutationSceneName
-            );
-            break;
+                SceneManager.LoadScene(refutationSceneName);
+                break;
 
-        // 나머지...
+            case GameFlowStep.Chapter1Stage1Refutation1SuccessDialogue:
+                currentStep = GameFlowStep.MiniGame;
+
+                SceneManager.LoadScene(miniGameSceneName);
+                break;
+
+            case GameFlowStep.Chapter1Stage1ConclusionSDialogue:
+                currentStep = GameFlowStep.Chapter1Stage2Dialogue;
+                SceneManager.LoadScene(chatSceneName);
+                break;
+
+                // 나머지...
+        }
     }
-}
 
     public void OnDialogueFinished()
     {
@@ -149,8 +156,8 @@ public void GoNext()
     {
         if (isSuccess)
         {
-            currentStep = GameFlowStep.MiniGame;
-            SceneManager.LoadScene(miniGameSceneName);
+            currentStep = GameFlowStep.Chapter1Stage1Refutation1SuccessDialogue;
+            SceneManager.LoadScene(chatSceneName);
         }
         else
         {
@@ -167,7 +174,7 @@ public void GoNext()
 
         currentStep = GameFlowStep.Stage2Intro;
         SceneManager.LoadScene(chatSceneName);
-    }
+    } //스테이지1 마지막에 심판이 없는데 왜 심판에서 스테이지2로 이어지는가?
 
     public void OnMiniGameCleared()
     {
@@ -227,35 +234,56 @@ public void GoNext()
         switch (currentStep)
         {
             case GameFlowStep.PrologueDialogue:
-                currentStep =
-                    GameFlowStep.Chapter1Stage1Dialogue;
+                currentStep = GameFlowStep.Chapter1PrologueDialogue;
                 return true;
 
-            case GameFlowStep.Chapter1Stage1Dialogue:
-                currentStep =
-                    GameFlowStep.Chapter1Stage2Dialogue;
+            case GameFlowStep.Chapter1Stage1ConclusionSDialogue:
+                currentStep = GameFlowStep.Chapter1Stage2Dialogue;
                 return true;
+            /*case GameFlowStep.Chapter1PrologueDialogue:
+                currentStep =
+                    GameFlowStep.InvestigationRoof;
+                return true;*/
 
-            // Stage2 다음은 조사씬이므로
+            // Stage2(->챕터1프롤로그) 다음은 조사씬이므로
             // 여기서 CurrentStep을 바꾸지 않는다.
             default:
                 return false;
         }
     }
 
+    public void MiniGame1Success()
+    {
+        currentStep = GameFlowStep.Chapter1Stage1ConclusionSDialogue;
+        SceneManager.LoadScene(chatSceneName);
+    }
+
+    public void MiniGame1Fail()
+    {
+        currentStep = GameFlowStep.Chapter1Stage1ConclutionFDialogue;
+        SceneManager.LoadScene(chatSceneName);
+    }
+
 }
+
 
 public enum GameFlowStep
 {
     None,
 
     PrologueDialogue,
-    Chapter1Stage1Dialogue,
+    Chapter1PrologueDialogue,
+    Chapter1Stage1Dialogue, 
+    Chapter1Stage1Refutation1SuccessDialogue,
+    Chapter1Stage1ConclusionSDialogue,
+    Chapter1Stage1ConclutionFDialogue,
+
     Chapter1Stage2Dialogue,
+    Chapter1Stage2RefutationSuccessDialogue,
 
     InvestigationRoof,
     InvestigationGround,
-
+    //스테이지 증가함에따라 논파, 심판, 미니게임도 늘어남
     Refutation,
     Judgment,
     MiniGame,

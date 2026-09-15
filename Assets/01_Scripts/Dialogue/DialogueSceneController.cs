@@ -17,8 +17,15 @@ public class DialogueSceneController : MonoBehaviour
 
     [Header("Scenario Data")]
     [SerializeField] private ScenarioData prologueScenario;
+    [SerializeField] private ScenarioData chapter1PrologueScenario;
     [SerializeField] private ScenarioData chapter1Stage1Scenario;
+    [SerializeField] private ScenarioData chapter1Stage1Refutation1SuccessScenario;
+    [SerializeField] private ScenarioData chapter1Stage1ConclutionSScenario;
+    [SerializeField] private ScenarioData chapter1Stage1ConclutionFScenario;
     [SerializeField] private ScenarioData chapter1Stage2Scenario;
+    [SerializeField] private ScenarioData chapter1Stage2RefutationSuccessScenario;
+
+
 
     [Header("Transition")]
     [SerializeField] private float fadeDuration = 0.5f;
@@ -181,11 +188,27 @@ public class DialogueSceneController : MonoBehaviour
             case GameFlowStep.PrologueDialogue:
                 return prologueScenario;
 
+            case GameFlowStep.Chapter1PrologueDialogue:
+                return chapter1PrologueScenario;
+
             case GameFlowStep.Chapter1Stage1Dialogue:
                 return chapter1Stage1Scenario;
 
+            case GameFlowStep.Chapter1Stage1Refutation1SuccessDialogue:
+                return chapter1Stage1Refutation1SuccessScenario;
+
+            case GameFlowStep.Chapter1Stage1ConclusionSDialogue:
+                return chapter1Stage1ConclutionSScenario;
+
+            case GameFlowStep.Chapter1Stage1ConclutionFDialogue:
+                return chapter1Stage1ConclutionFScenario;
+
             case GameFlowStep.Chapter1Stage2Dialogue:
                 return chapter1Stage2Scenario;
+
+            case GameFlowStep.Chapter1Stage2RefutationSuccessDialogue:
+                return chapter1Stage2RefutationSuccessScenario;
+
 
             default:
                 return null;
