@@ -4,84 +4,109 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-/// <summary>
-/// ChoiceController
-///
-/// 담당:
-/// - 선택지 버튼을 동적으로 생성하고 관리
-/// - ChoiceData 목록을 받아 선택지 UI를 화면에 출력
-/// - 플레이어가 선택지를 클릭하면 선택된 ChoiceData를 콜백으로 전달
-///
-/// 사용 위치:
-/// - 선택지 버튼들이 배치될 UI 부모 오브젝트에 부착
-/// - 대화 중 선택지가 필요한 ScenarioStepType.Choice 단계에서 호출
-///
-/// 연결:
-/// - ScenarioRunner에서 Choice 타입 Step을 실행할 때 사용
-/// - ScenarioData의 ChoiceData 정보를 받아 버튼 텍스트와 선택 결과를 처리
-/// - 선택 결과에 따라 다음 Step 진행, 반응 대사 출력, 씬 이동 등의 처리를 연결 가능
-///
-/// TODO:
-/// - 선택지 등장/퇴장 애니메이션 추가
-/// - 선택지 선택 시 사운드/하이라이트 효과 추가
-/// - 선택 결과가 GameFlagManager나 ChapterManager에 영향을 주도록 확장
-/// 
-/// </summary>
 public class ChoiceController : MonoBehaviour
 {
-    [SerializeField] private Button choiceButtonPrefab;
+    [Header("UI Reference")]
+    [Tooltip("ChoicePanel 오브젝트 (비활성화 상태로 시작)")]
+    [SerializeField] private GameObject choicePanel;
 
-    private readonly List<Button> createdButtons = new();
+    [Header("Judgment Choice Panel Internal Elements")]
+    [SerializeField] private TMP_Text stageText;
+    [SerializeField] private TMP_Text descriptionText;
+    [SerializeField] private Button judgeButton;      // 심판한다 버튼 (첫번째 선택지)
+    [SerializeField] private Button digDeeperButton;  // 파고든다 버튼 (두번째 선택지)
 
+    private void Awake()
+    {
+        if (choicePanel == null)
+        {
+            choicePanel = gameObject;
+        }
+
+        // 시작할 때 패널 비활성화
+        HideChoices();
+    }
+
+    /// <summary>
+    /// ScenarioRunner에서 선택지 Step이 올 때 호출됩니다.
+    /// </summary>
     public void ShowChoices(
         List<ChoiceData> choices,
         Action<ChoiceData> onChoiceSelected)
     {
-        ClearButtons();
-
-            if (choices == null || choices.Count == 0)
+        if (choices == null || choices.Count == 0)
         {
-            Debug.LogWarning("선택지 표시.");
+            Debug.LogWarning("표시할 선택지 데이터가 없습니다.");
+            HideChoices();
             return;
         }
 
-        foreach (ChoiceData choice in choices)
+        // 기존 버튼 리스너 초기화
+        if (judgeButton != null) judgeButton.onClick.RemoveAllListeners();
+        if (digDeeperButton != null) digDeeperButton.onClick.RemoveAllListeners();
+
+        // 1번째 선택지 세팅 (예: 심판한다 / 법봉을 세 번 두두리기)
+        if (choices.Count > 0 && judgeButton != null)
         {
-            CreateChoiceButton(choice, onChoiceSelected);
+            judgeButton.gameObject.SetActive(true);
+            SetButtonData(judgeButton, choices[0], onChoiceSelected);
+        }
+        else if (judgeButton != null)
+        {
+            judgeButton.gameObject.SetActive(false);
+        }
+
+        // 2번째 선택지 세팅 (예: 파고든다 / 심판을 그만두기)
+        if (choices.Count > 1 && digDeeperButton != null)
+        {
+            digDeeperButton.gameObject.SetActive(true);
+            SetButtonData(digDeeperButton, choices[1], onChoiceSelected);
+        }
+        else if (digDeeperButton != null)
+        {
+            digDeeperButton.gameObject.SetActive(false);
+        }
+
+        // ChoicePanel 전체 활성화
+        if (choicePanel != null)
+        {
+            choicePanel.SetActive(true);
         }
     }
 
-    private void CreateChoiceButton(ChoiceData choice, Action<ChoiceData> onChoiceSelected)
+    private void SetButtonData(Button button, ChoiceData choice, Action<ChoiceData> onChoiceSelected)
     {
-        Button button = Instantiate(choiceButtonPrefab, transform);
-
-        TMP_Text buttonText = button.GetComponentInChildren<TMP_Text>();
-
-        if (buttonText != null)
+        TMP_Text btnText = button.GetComponentInChildren<TMP_Text>();
+        if (btnText != null)
         {
-            buttonText.text = choice.choiceText;
+            btnText.text = choice.choiceText;
         }
 
         button.onClick.AddListener(() =>
         {
-            Debug.Log($"선택한 텍스트: {choice.choiceText}");
-
-            ClearButtons();
+            Debug.Log($"선택지 클릭: {choice.choiceText}");
+            HideChoices(); // 선택 후 패널 닫기
             onChoiceSelected?.Invoke(choice);
         });
-
-        createdButtons.Add(button);
     }
-    public void ClearButtons()
-    {
-        foreach (Button button in createdButtons)
-        {
-            if (button != null)
-            {
-                Destroy(button.gameObject);
-            }
-        }
 
-        createdButtons.Clear();
+    /// <summary>
+    /// 상황에 따라 설명문(DescriptionText)이나 단계(StageText) 텍스트를 외부에서 변경할 필요가 있을 때 사용합니다.
+    /// </summary>
+    public void SetJudgmentInfo(string stage, string description)
+    {
+        if (stageText != null) stageText.text = stage;
+        if (descriptionText != null) descriptionText.text = description;
+    }
+
+    /// <summary>
+    /// ChoicePanel을 비활성화합니다.
+    /// </summary>
+    public void HideChoices()
+    {
+        if (choicePanel != null)
+        {
+            choicePanel.SetActive(false);
+        }
     }
 }

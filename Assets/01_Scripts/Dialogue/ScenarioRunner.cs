@@ -66,6 +66,7 @@ public class ScenarioRunner : MonoBehaviour
     private Coroutine scenarioCoroutine;
     private bool isWaitingForCG;
     private bool isSkipping;
+    private bool jumpRequested = false;
 
     private System.Action onScenarioFinished;
 
@@ -170,6 +171,12 @@ public class ScenarioRunner : MonoBehaviour
             }
 
             yield return ExecuteStep(step);
+
+            if (jumpRequested)
+            {
+                jumpRequested = false;
+                continue; // 바뀐 currentStepIndex 위치부터 루프 재개
+            }
 
             if (sceneLoadRequested)
             {
@@ -377,6 +384,12 @@ public class ScenarioRunner : MonoBehaviour
 
             case ChoiceActionType.LoadScene:
                 LoadTargetScene(choice.targetScene);
+                break;
+
+            case ChoiceActionType.JumpToStep:
+                yield return ExecuteReactionSteps(choice.reactionSteps); // 필요 시 반응 대사 먼저 출력
+                currentStepIndex = choice.targetStepIndex - 1; // for문 증감(++)을 고려해 -1 처리
+                jumpRequested = true;
                 break;
         }
     }

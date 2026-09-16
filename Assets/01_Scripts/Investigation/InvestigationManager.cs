@@ -168,6 +168,7 @@ public class InvestigationManager : MonoBehaviour
 
     public void InitializeStage(Transform newCluesParent)
     {
+
         cluesParent = newCluesParent;
 
         // 이전 Stage 데이터 초기화

@@ -63,8 +63,7 @@ public class InvestigationSceneController : MonoBehaviour
         }
     }
 
-    private void LoadStage(
-        InvestigationStageData data)
+    private void LoadStage(InvestigationStageData data)
     {
         // 배경 교체
         if (backgroundImage != null)
@@ -100,5 +99,19 @@ public class InvestigationSceneController : MonoBehaviour
         investigationManager.InitializeStage(
             currentStageObject.transform
         );
+        // investigationManager 참조가 null이거나 Missing인 경우 싱글톤 Instance로 자동 할당
+        if (investigationManager == null)
+        {
+            investigationManager = InvestigationManager.Instance;
+        }
+
+        if (investigationManager != null)
+        {
+            investigationManager.InitializeStage(currentStageObject.transform);
+        }
+        else
+        {
+            Debug.LogError("InvestigationManager를 찾을 수 없습니다.");
+        }
     }
 }
