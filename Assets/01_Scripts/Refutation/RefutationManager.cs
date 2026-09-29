@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -36,7 +37,8 @@ using TMPro;
 public class RefutationManager : MonoBehaviour
 {
     [Header("매니저")]
-    [SerializeField] private ChatDialogueManager chatManager;
+    [SerializeField] private ChatDialogueManager generalDialogueManager;   // Hierarchy: DialougeManager_1 (일반 대화 / 오답 반응)
+    [SerializeField] private ChatDialogueManager testimonyDialogueManager;  // Hierarchy: DialougeManager_2 (증언 슬라이드)
     [SerializeField] private RefutationDatabase refutationDatabase;
 
     [Header("논파 관련")]
@@ -44,6 +46,7 @@ public class RefutationManager : MonoBehaviour
     [SerializeField] private int playerLife = 5;
 
     [Header("UI")]
+    [SerializeField] private GameObject refutationGroup;                   // Hierarchy: Rafutation (논파 전체 부모 그룹)
     [SerializeField] private GameObject refutationArrowsUI;
     [SerializeField] private GameObject leftArrowBtn;
     [SerializeField] private GameObject rightArrowBtn;
@@ -60,8 +63,7 @@ public class RefutationManager : MonoBehaviour
     [SerializeField] private string characterStandName = "기본";
 
     [Header("Default Responses")]
-    [SerializeField] private string defaultWrongMessage =
-        "이건 모순과 관련 없는 것 같아.";
+    [SerializeField] private string defaultWrongMessage = "이건 모순과 관련 없는 것 같아.";
 
     private int currentIndex = 0;
     private string lockedTestimonyId;
@@ -69,19 +71,13 @@ public class RefutationManager : MonoBehaviour
     private bool isWaitingForClick = false;
     private bool isRefutationFinished = false;
 
-    private void Start()
-    {
-        Time.timeScale = 1f;
-
-        StartTestimony();
-    }
+    // 💡 성공/실패 시 외부(DynamicSequenceRunner)에 알려줄 콜백
+    private Action onSuccessCallback;
+    private Action onFailCallback;
 
     private void Update()
     {
-        if (isRefutationFinished)
-        {
-            return;
-        }
+        if (isRefutationFinished) return;
 
         if (isWaitingForClick)
         {
@@ -89,38 +85,23 @@ public class RefutationManager : MonoBehaviour
             {
                 ReturnToTestimony();
             }
-
             return;
         }
 
         if (!isSelectingEvidence)
         {
-            if (Input.GetKeyDown(KeyCode.LeftArrow))
-            {
-                OnClickPrev();
-            }
+            if (Input.GetKeyDown(KeyCode.LeftArrow)) OnClickPrev();
+            if (Input.GetKeyDown(KeyCode.RightArrow)) OnClickNext();
 
-            if (Input.GetKeyDown(KeyCode.RightArrow))
+            if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
             {
-                OnClickNext();
-            }
-
-            if (Input.GetKeyDown(KeyCode.Return) ||
-                Input.GetKeyDown(KeyCode.KeypadEnter))
-            {
-                if (EventSystem.current != null)
-                {
-                    EventSystem.current.SetSelectedGameObject(null);
-                }
-
+                if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(null);
                 OpenEvidenceSelection();
             }
         }
         else
         {
-            if (Input.GetKeyDown(KeyCode.Escape) ||
-                Input.GetKeyDown(KeyCode.Return) ||
-                Input.GetKeyDown(KeyCode.KeypadEnter))
+            if (Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
             {
                 CloseEvidenceSelection();
             }
@@ -128,12 +109,21 @@ public class RefutationManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 논파를 시작하고 첫 번째 증언을 표시합니다.
+    /// 외부 시퀀스 러너에서 호출하는 논파 시작 함수입니다.
     /// </summary>
+    public void StartRefutation(List<string> testimonies, Action onSuccess, Action onFail)
+    {
+        this.testimonyIdList = testimonies;
+        this.onSuccessCallback = onSuccess;
+        this.onFailCallback = onFail;
+
+        gameObject.SetActive(true);
+        StartTestimony();
+    }
+
     public void StartTestimony()
     {
-        if (testimonyIdList == null ||
-            testimonyIdList.Count == 0)
+        if (testimonyIdList == null || testimonyIdList.Count == 0)
         {
             Debug.LogWarning("논파할 증언 ID가 없습니다.");
             return;
@@ -144,65 +134,37 @@ public class RefutationManager : MonoBehaviour
         isWaitingForClick = false;
         isRefutationFinished = false;
 
+        // 논파 UI 그룹 활성화
+        if (refutationGroup != null) refutationGroup.SetActive(true);
+
         UpdateLifeUI();
 
-        if (refutationArrowsUI != null)
-        {
-            refutationArrowsUI.SetActive(true);
-        }
-
-        if (successPopupUI != null)
-        {
-            successPopupUI.SetActive(false);
-        }
-
-        if (evidenceSelectionPanel != null)
-        {
-            evidenceSelectionPanel.SetActive(false);
-        }
+        if (refutationArrowsUI != null) refutationArrowsUI.SetActive(true);
+        if (successPopupUI != null) successPopupUI.SetActive(false);
+        if (evidenceSelectionPanel != null) evidenceSelectionPanel.SetActive(false);
 
         if (standingController != null)
         {
-            StandStep[] stands =
-            {
-                new StandStep
-                {
-                    standName = characterStandName
-                }
-            };
-
+            StandStep[] stands = { new StandStep { standName = characterStandName } };
             standingController.SetSprite(stands);
         }
 
         ShowCurrentLine();
     }
 
-    /// <summary>
-    /// 현재 증언 ID에 해당하는 대사와 캐릭터 상태를 화면에 표시합니다.
-    /// </summary>
     private void ShowCurrentLine()
     {
-        if (refutationDatabase == null)
-        {
-            Debug.LogError("RefutationDatabase가 연결되지 않았습니다.");
-            return;
-        }
+        if (refutationDatabase == null) return;
 
-        string currentTestimonyId =
-            testimonyIdList[currentIndex];
-
-        var entry =
-            refutationDatabase.GetRefutationData(currentTestimonyId);
+        string currentTestimonyId = testimonyIdList[currentIndex];
+        var entry = refutationDatabase.GetRefutationData(currentTestimonyId);
 
         if (entry != null)
         {
-            if (chatManager != null)
+            // [수정] chatManager -> testimonyDialogueManager (증언창 사용)
+            if (testimonyDialogueManager != null)
             {
-                chatManager.ShowSingleLine(
-                    entry.character,
-                    entry.dialogue,
-                    null
-                );
+                testimonyDialogueManager.ShowSingleLine(entry.character, entry.dialogue, null);
             }
 
             if (standingController != null)
@@ -211,216 +173,90 @@ public class RefutationManager : MonoBehaviour
                 {
                     standingController.SetExpression(entry.expression);
                 }
-
                 standingController.SetColor(entry.character);
             }
         }
 
-        if (leftArrowBtn != null)
-        {
-            leftArrowBtn.SetActive(currentIndex > 0);
-        }
-
-        if (rightArrowBtn != null)
-        {
-            rightArrowBtn.SetActive(
-                currentIndex < testimonyIdList.Count - 1
-            );
-        }
+        if (leftArrowBtn != null) leftArrowBtn.SetActive(currentIndex > 0);
+        if (rightArrowBtn != null) rightArrowBtn.SetActive(currentIndex < testimonyIdList.Count - 1);
     }
 
-    /// <summary>
-    /// 플레이어 목숨 수 UI를 갱신합니다.
-    /// </summary>
     private void UpdateLifeUI()
     {
-        if (lifeText != null)
-        {
-            lifeText.text = $"남은 목숨: {playerLife}";
-        }
+        if (lifeText != null) lifeText.text = $"남은 목숨: {playerLife}";
     }
 
-    /// <summary>
-    /// 이전 증언으로 이동합니다.
-    /// </summary>
     public void OnClickPrev()
     {
-        if (isSelectingEvidence ||
-            isWaitingForClick)
-        {
-            return;
-        }
-
-        if (currentIndex <= 0)
-        {
-            return;
-        }
-
+        if (isSelectingEvidence || isWaitingForClick || currentIndex <= 0) return;
         currentIndex--;
-
         ShowCurrentLine();
     }
 
-    /// <summary>
-    /// 다음 증언으로 이동합니다.
-    /// </summary>
     public void OnClickNext()
     {
-        if (isSelectingEvidence ||
-            isWaitingForClick)
-        {
-            return;
-        }
-
-        if (currentIndex >= testimonyIdList.Count - 1)
-        {
-            return;
-        }
-
+        if (isSelectingEvidence || isWaitingForClick || currentIndex >= testimonyIdList.Count - 1) return;
         currentIndex++;
-
         ShowCurrentLine();
     }
 
-    /// <summary>
-    /// 현재 증언에 대해 제시할 증거를 선택하는 패널을 엽니다.
-    /// </summary>
     private void OpenEvidenceSelection()
     {
-        if (testimonyIdList == null ||
-            testimonyIdList.Count == 0)
-        {
-            return;
-        }
+        if (testimonyIdList == null || testimonyIdList.Count == 0) return;
 
         lockedTestimonyId = testimonyIdList[currentIndex];
         isSelectingEvidence = true;
 
-        if (refutationArrowsUI != null)
-        {
-            refutationArrowsUI.SetActive(false);
-        }
-
-        if (evidenceSelectionPanel != null)
-        {
-            evidenceSelectionPanel.SetActive(true);
-        }
+        if (refutationArrowsUI != null) refutationArrowsUI.SetActive(false);
+        if (evidenceSelectionPanel != null) evidenceSelectionPanel.SetActive(true);
 
         RefreshEvidenceUI();
     }
 
-    /// <summary>
-    /// GameProgressManager에 저장된 획득 단서 목록을 읽어와 증거 슬롯을 생성합니다.
-    /// </summary>
     private void RefreshEvidenceUI()
     {
-        if (evidenceSlotPrefab == null ||
-            evidenceContentParent == null)
-        {
-            Debug.LogWarning("증거 슬롯 프리팹 또는 Content Parent가 연결되지 않았습니다.");
-            return;
-        }
+        if (evidenceSlotPrefab == null || evidenceContentParent == null) return;
 
-        foreach (Transform child in evidenceContentParent)
-        {
-            Destroy(child.gameObject);
-        }
+        foreach (Transform child in evidenceContentParent) Destroy(child.gameObject);
 
         IReadOnlyList<ClueData> clues = null;
+        if (GameProgressManager.Instance != null) clues = GameProgressManager.Instance.AcquiredClues;
+        if ((clues == null || clues.Count == 0) && InventoryManager.Instance != null) clues = InventoryManager.Instance.acquiredItems;
 
-        if (GameProgressManager.Instance != null)
-        {
-            clues = GameProgressManager.Instance.AcquiredClues;
-        }
-
-        if ((clues == null || clues.Count == 0) &&
-            InventoryManager.Instance != null)
-        {
-            clues = InventoryManager.Instance.acquiredItems;
-        }
-
-        if (clues == null ||
-            clues.Count == 0)
-        {
-            Debug.LogWarning("논파에 사용할 증거가 없습니다.");
-            return;
-        }
+        if (clues == null || clues.Count == 0) return;
 
         foreach (ClueData clue in clues)
         {
-            if (clue == null)
-            {
-                continue;
-            }
+            if (clue == null) continue;
 
-            GameObject newSlotObj = Instantiate(
-                evidenceSlotPrefab,
-                evidenceContentParent
-            );
-
-            Button slotBtn =
-                newSlotObj.GetComponent<Button>();
+            GameObject newSlotObj = Instantiate(evidenceSlotPrefab, evidenceContentParent);
+            Button slotBtn = newSlotObj.GetComponent<Button>();
 
             if (slotBtn != null)
             {
                 string capturedClueID = clue.clueID;
-
-                slotBtn.onClick.AddListener(
-                    () => OnSelectEvidence(capturedClueID)
-                );
+                slotBtn.onClick.AddListener(() => OnSelectEvidence(capturedClueID));
             }
 
-            Transform iconTransform =
-                newSlotObj.transform.Find("ClueIcon");
-
-            if (iconTransform != null &&
-                clue.clueIcon != null)
+            Transform iconTransform = newSlotObj.transform.Find("ClueIcon");
+            if (iconTransform != null && clue.clueIcon != null)
             {
-                Image iconImage =
-                    iconTransform.GetComponent<Image>();
-
-                if (iconImage != null)
-                {
-                    iconImage.sprite = clue.clueIcon;
-                }
+                Image iconImage = iconTransform.GetComponent<Image>();
+                if (iconImage != null) iconImage.sprite = clue.clueIcon;
             }
         }
     }
 
-    /// <summary>
-    /// 플레이어가 증거를 선택했을 때 정답 여부를 판정합니다.
-    /// </summary>
     public void OnSelectEvidence(string selectedEvidenceId)
     {
-        if (!isSelectingEvidence ||
-            isRefutationFinished)
-        {
-            return;
-        }
+        if (!isSelectingEvidence || isRefutationFinished || refutationDatabase == null) return;
 
-        if (refutationDatabase == null)
-        {
-            Debug.LogError("RefutationDatabase가 연결되지 않았습니다.");
-            return;
-        }
+        var entry = refutationDatabase.GetRefutationData(lockedTestimonyId);
+        if (entry == null) return;
 
-        var entry =
-            refutationDatabase.GetRefutationData(
-                lockedTestimonyId
-            );
+        if (evidenceSelectionPanel != null) evidenceSelectionPanel.SetActive(false);
 
-        if (entry == null)
-        {
-            return;
-        }
-
-        if (evidenceSelectionPanel != null)
-        {
-            evidenceSelectionPanel.SetActive(false);
-        }
-
-        if (entry.isWeakPoint &&
-            entry.correctEvidenceId == selectedEvidenceId)
+        if (entry.isWeakPoint && entry.correctEvidenceId == selectedEvidenceId)
         {
             HandleCorrectEvidence();
         }
@@ -430,24 +266,17 @@ public class RefutationManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 정답 증거를 선택했을 때 논파 성공 처리를 합니다.
-    /// </summary>
     private void HandleCorrectEvidence()
     {
         isSelectingEvidence = false;
         isWaitingForClick = false;
         isRefutationFinished = true;
 
-        if (chatManager != null)
-        {
-            chatManager.HideDialogueUI();
-        }
+        // [수정] chatManager -> 양쪽 대화창 모두 숨김
+        if (testimonyDialogueManager != null) testimonyDialogueManager.HideDialogueUI();
+        if (generalDialogueManager != null) generalDialogueManager.HideDialogueUI();
 
-        if (refutationArrowsUI != null)
-        {
-            refutationArrowsUI.SetActive(false);
-        }
+        if (refutationArrowsUI != null) refutationArrowsUI.SetActive(false);
 
         if (successPopupUI != null)
         {
@@ -459,15 +288,10 @@ public class RefutationManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 오답 증거를 선택했을 때 목숨 차감 및 실패 여부를 처리합니다.
-    /// </summary>
     private void HandleWrongEvidence(string selectedEvidenceId)
     {
         playerLife--;
         UpdateLifeUI();
-
-        Debug.Log($"오답! 남은 목숨: {playerLife}");
 
         if (playerLife <= 0)
         {
@@ -475,121 +299,82 @@ public class RefutationManager : MonoBehaviour
             return;
         }
 
-        string wrongMsg = GetWrongMessage(
-            lockedTestimonyId,
-            selectedEvidenceId
-        );
-
-        if (chatManager != null)
-        {
-            chatManager.ShowSingleLine(
-                string.Empty,
-                wrongMsg,
-                null
-            );
-        }
-
-        if (refutationArrowsUI != null)
-        {
-            refutationArrowsUI.SetActive(false);
-        }
-
+        if (refutationArrowsUI != null) refutationArrowsUI.SetActive(false);
         isSelectingEvidence = false;
-        isWaitingForClick = true;
-    }
 
-    /// <summary>
-    /// 성공 팝업의 확인 버튼에서 호출합니다.
-    /// 논파 성공 결과를 GameProgressManager에 전달합니다.
-    /// </summary>
-    public void ConfirmSuccess()
-    {
-        if (successPopupUI != null)
-        {
-            successPopupUI.SetActive(false);
-        }
+        var customWrongDialogue = refutationDatabase.GetCustomWrongDialogue(lockedTestimonyId, selectedEvidenceId);
 
-        if (GameProgressManager.Instance != null)
+        // A. customWrongCsv에 오답 대사가 작성되어 있는 경우 (단일/연속 모두 지원)
+        if (customWrongDialogue != null && customWrongDialogue.Count > 0)
         {
-            GameProgressManager.Instance.OnRefutationFinished(true);
+            List<ChatDialogueManager.DialogueLine> lines = new();
+            foreach (var item in customWrongDialogue)
+            {
+                lines.Add(new ChatDialogueManager.DialogueLine
+                {
+                    speaker = item.speaker,
+                    dialogue = item.wrongMessage
+                });
+            }
+
+            // [수정] chatManager -> generalDialogueManager (일반 대화창 사용)
+            if (generalDialogueManager != null)
+            {
+                generalDialogueManager.ShowDialogueUI();
+                generalDialogueManager.StartDialogue(lines.ToArray(), ReturnToTestimony);
+            }
+            else
+            {
+                ReturnToTestimony();
+            }
         }
+        // B. CSV에 지정된 대사가 없어서 기본 오답 문장을 사용하는 경우
         else
         {
-            Debug.LogError("GameProgressManager가 없습니다.");
+            // [수정] chatManager -> generalDialogueManager (일반 대화창 사용)
+            if (generalDialogueManager != null)
+            {
+                generalDialogueManager.ShowSingleLine(string.Empty, defaultWrongMessage, null);
+            }
+            isWaitingForClick = true;
         }
     }
 
-    /// <summary>
-    /// 논파 실패 결과를 GameProgressManager에 전달합니다.
-    /// </summary>
+    public void ConfirmSuccess()
+    {
+        if (successPopupUI != null) successPopupUI.SetActive(false);
+        if (refutationGroup != null) refutationGroup.SetActive(false);
+        gameObject.SetActive(false);
+
+        // 💡 씬을 직접 전환하지 않고, 나를 불러준 SequenceRunner에게 완료 신호를 보냄
+        onSuccessCallback?.Invoke();
+    }
+
     private void FailRefutation()
     {
         isSelectingEvidence = false;
         isWaitingForClick = false;
         isRefutationFinished = true;
+        if (refutationGroup != null) refutationGroup.SetActive(false);
+        gameObject.SetActive(false);
 
-        if (GameProgressManager.Instance != null)
-        {
-            GameProgressManager.Instance.OnRefutationFinished(false);
-        }
-        else
-        {
-            Debug.LogError("GameProgressManager가 없습니다.");
-        }
+        // 💡 나를 불러준 SequenceRunner에게 실패 신호를 보냄
+        onFailCallback?.Invoke();
     }
 
-    /// <summary>
-    /// 선택한 증거에 맞는 오답 대사를 가져옵니다.
-    /// 별도 지정된 오답 대사가 없으면 기본 오답 대사를 반환합니다.
-    /// </summary>
-    private string GetWrongMessage(
-        string testimonyId,
-        string evidenceId)
-    {
-        string customMessage =
-            refutationDatabase.GetCustomWrongMessage(
-                testimonyId,
-                evidenceId
-            );
-
-        if (!string.IsNullOrWhiteSpace(customMessage))
-        {
-            return customMessage;
-        }
-
-        return defaultWrongMessage;
-    }
-
-    /// <summary>
-    /// 오답 대사 출력 후 화면 클릭 시 다시 현재 증언 화면으로 복귀합니다.
-    /// </summary>
     private void ReturnToTestimony()
     {
         isWaitingForClick = false;
         isSelectingEvidence = false;
 
-        if (refutationArrowsUI != null)
-        {
-            refutationArrowsUI.SetActive(true);
-        }
-
+        if (refutationArrowsUI != null) refutationArrowsUI.SetActive(true);
         ShowCurrentLine();
     }
 
-    /// <summary>
-    /// 증거 선택 패널을 닫고 증언 화면으로 돌아갑니다.
-    /// </summary>
     public void CloseEvidenceSelection()
     {
-        if (evidenceSelectionPanel != null)
-        {
-            evidenceSelectionPanel.SetActive(false);
-        }
-
-        if (refutationArrowsUI != null)
-        {
-            refutationArrowsUI.SetActive(true);
-        }
+        if (evidenceSelectionPanel != null) evidenceSelectionPanel.SetActive(false);
+        if (refutationArrowsUI != null) refutationArrowsUI.SetActive(true);
 
         isSelectingEvidence = false;
         isWaitingForClick = false;

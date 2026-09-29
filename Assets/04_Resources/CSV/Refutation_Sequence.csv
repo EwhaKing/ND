@@ -1,0 +1,5 @@
+StepIndex ,StepType ,TargetID ,Note ,
+1,DIALOGUE,ref_01,코드에 영향을 주지 않는 단순  메모,
+2,REFUTATION,"01_01,01_02,01_03",논파에 사용할 대사 전부 컴마로 구분해서 입력,
+3,DIALOGUE,ref_02,,
+4,END,,논파 종료 이후 뭐 할지...,

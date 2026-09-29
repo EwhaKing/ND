@@ -1,5 +1,5 @@
-열 1,열 2,열 3,열 4,열 5
-dialogueId,evidenceId,wrongDialogue,,
-01_01,Test01,커스텀 오답 문장 1번,,
-01_01,Test02,커스텀 오답 문장 2번,,
-01_02,Test03,커스텀 오답 문장 3번,,
+dialogueId,evidenceId,speaker ,wrongDialogue,
+01_01,Test01,,커스텀 오답 문장 1번,
+01_01,Test02,Character,그러니까 그게 무슨 상관인데요!,
+01_01,Test02,,틀린 것 같다...,
+01_02,Test03,,커스텀 오답 문장 3번,
