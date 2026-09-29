@@ -57,6 +57,9 @@ public class ScenarioRunner : MonoBehaviour
     [Header("Fade")]
     [SerializeField] private Fade fadeController;
 
+    [Header("Animation")]
+    [SerializeField] private AnimationController animController;
+
     private int currentStepIndex;
     private bool isRunning;
     private bool isWaitingForDialogue;
@@ -230,11 +233,15 @@ public class ScenarioRunner : MonoBehaviour
                 break;
 
             case ScenarioStepType.CGHide:
-                HideCG();
+                yield return HideCG(step);
                 break;
 
             case ScenarioStepType.Fade:
-                yield return PlayFade(step);
+                PlayFade(step);
+                break;
+
+            case ScenarioStepType.Animation:
+                yield return ShowAnimation(step);
                 break;
 
             default:
@@ -477,12 +484,31 @@ public class ScenarioRunner : MonoBehaviour
             dialogueManager.HideDialogueUI();
         }
 
+        if (fadeController != null)
+        {
+            bool fadeOutComplete = false;
+            fadeController.FadeOut(-1f, 0f, () => fadeOutComplete = true);
+            yield return new WaitUntil(() => fadeOutComplete);
+        }
+
         isWaitingForCG = true;
 
         cgController.Show(
             step.cgSprite,
             OnCGClicked
         );
+
+        if (fadeController != null)
+        {
+            if (step.fadeDuration > 0f)
+            {
+                yield return new WaitForSecondsRealtime(step.fadeDuration);
+            }
+
+            bool fadeInComplete = false;
+            fadeController.FadeIn(-1f, 0f, () => fadeInComplete = true);
+            yield return new WaitUntil(() => fadeInComplete);
+        }
 
         yield return new WaitUntil(
             () => !isWaitingForCG
@@ -502,15 +528,34 @@ public class ScenarioRunner : MonoBehaviour
     /// <summary>
     /// 현재 표시 중인 CG를 숨깁니다.
     /// </summary>
-    private void HideCG()
+    private IEnumerator HideCG(ScenarioStep step)
     {
         if (cgController == null)
         {
             Debug.LogError("CGController가 연결되지 않았습니다.");
-            return;
+            yield break;
+        }
+
+        if (fadeController != null)
+        {
+            bool fadeOutComplete = false;
+            fadeController.FadeOut(-1f, 0f, () => fadeOutComplete = true);
+            yield return new WaitUntil(() => fadeOutComplete);
         }
 
         cgController.Hide();
+
+        if (fadeController != null)
+        {
+            if (step.fadeDuration > 0f)
+            {
+                yield return new WaitForSecondsRealtime(step.fadeDuration);
+            }
+
+            bool fadeInComplete = false;
+            fadeController.FadeIn(-1f, 0f, () => fadeInComplete = true);
+            yield return new WaitUntil(() => fadeInComplete);
+        }
     }
 
     private IEnumerator PlayFade(ScenarioStep step)
@@ -606,5 +651,30 @@ public class ScenarioRunner : MonoBehaviour
         }
 
         return true;
+    }
+
+    private IEnumerator ShowAnimation(ScenarioStep step)
+    {
+        if (animController == null || step.animClip == null)
+        {
+            Debug.LogError("AnimationClipPlayer 또는 animClip이 설정되지 않았습니다.");
+            yield break;
+        }
+
+        if (isSkipping)
+        {
+            yield break;
+        }
+
+        bool isAnimFinished = false;
+
+        // 애니메이션 실행
+        animController.PlayClip(step.animClip, () => isAnimFinished = true);
+
+        if (step.waitForCompletion)
+        {
+            // 애니메이션 재생 시간만큼 대기
+            yield return new WaitUntil(() => isAnimFinished);
+        }
     }
 }
