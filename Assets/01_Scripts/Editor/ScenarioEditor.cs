@@ -196,6 +196,10 @@ public class ScenarioDataEditor : Editor
                     MessageType.Info
                 );
                 break;
+
+            case ScenarioStepType.Animation:
+                DrawAnimationFields(step);
+                break;
         }
     }
     private void SwapSteps(int firstIndex, int secondIndex)
@@ -503,5 +507,20 @@ public class ScenarioDataEditor : Editor
             temporary;
 
         EditorUtility.SetDirty(scenarioData);
+    }
+    private void DrawAnimationFields(ScenarioStep step)
+    {
+        EditorGUILayout.LabelField("Animation Clip Settings", EditorStyles.boldLabel);
+
+        // Animation Clip 에셋 필드
+        step.animClip = (AnimationClip)EditorGUILayout.ObjectField(
+            "Animation Clip",
+            step.animClip,
+            typeof(AnimationClip),
+            false
+        );
+
+        // 완료 대기 여부
+        step.waitForCompletion = EditorGUILayout.Toggle("Wait For Completion", step.waitForCompletion);
     }
 }

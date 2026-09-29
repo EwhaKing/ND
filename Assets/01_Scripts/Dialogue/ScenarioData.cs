@@ -42,7 +42,8 @@ public enum ScenarioStepType
     Choice,
     CGShow,
     CGHide,
-    Fade
+    Fade,
+    Animation
 }
 
 /// <summary>
@@ -96,6 +97,10 @@ public class ScenarioStep
     [Header("Fade")]
     public float fadeDuration = 0.5f;
     public float fadeHoldDuration = 1f;
+
+    [Header("Animation")]
+    public AnimationClip animClip;
+    public bool waitForCompletion = true; //애니메이션이 끝날 때까지 대사/다음 연출을 멈출지 여부
 }
 
 /// <summary>
