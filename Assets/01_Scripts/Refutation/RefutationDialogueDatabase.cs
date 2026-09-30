@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
 
-public class RafutationDialogueDatabase : MonoBehaviour
+public class RefutationDialogueDatabase : MonoBehaviour
 {
     [Serializable]
     public class DialogueData
@@ -26,8 +25,7 @@ public class RafutationDialogueDatabase : MonoBehaviour
     public List<DialogueData> GetDialogueGroup(string groupId)
     {
         if (string.IsNullOrWhiteSpace(groupId)) return null;
-        if (dialogueTable.TryGetValue(groupId, out var list)) return list;
-        return null;
+        return dialogueTable.TryGetValue(groupId, out var list) ? list : null;
     }
 
     private void LoadCsv()
@@ -35,7 +33,7 @@ public class RafutationDialogueDatabase : MonoBehaviour
         dialogueTable.Clear();
         if (dialogueCsv == null) return;
 
-        List<string[]> rows = ParseCsv(dialogueCsv.text);
+        List<string[]> rows = CsvParser.Parse(dialogueCsv.text);
         for (int i = 1; i < rows.Count; i++)
         {
             string[] row = rows[i];
@@ -62,33 +60,5 @@ public class RafutationDialogueDatabase : MonoBehaviour
 
             dialogueTable[groupId].Add(data);
         }
-    }
-
-    private List<string[]> ParseCsv(string csvText)
-    {
-        List<string[]> rows = new();
-        List<string> currentRow = new();
-        StringBuilder currentValue = new();
-        bool insideQuotes = false;
-
-        csvText = csvText.TrimStart('\uFEFF');
-        for (int i = 0; i < csvText.Length; i++)
-        {
-            char c = csvText[i];
-            if (c == '"') { insideQuotes = !insideQuotes; continue; }
-            if (c == ',' && !insideQuotes) { currentRow.Add(currentValue.ToString()); currentValue.Clear(); continue; }
-            if ((c == '\n' || c == '\r') && !insideQuotes)
-            {
-                if (c == '\r' && i + 1 < csvText.Length && csvText[i + 1] == '\n') continue;
-                currentRow.Add(currentValue.ToString()); currentValue.Clear();
-                if (currentRow.Count > 0) rows.Add(currentRow.ToArray());
-                currentRow.Clear();
-                continue;
-            }
-            currentValue.Append(c);
-        }
-        currentRow.Add(currentValue.ToString());
-        if (currentRow.Count > 0) rows.Add(currentRow.ToArray());
-        return rows;
     }
 }

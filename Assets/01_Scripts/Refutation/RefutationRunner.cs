@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
 
-public class RafutationRunner : MonoBehaviour
+public class RefutationRunner : MonoBehaviour
 {
     public enum StepType
     {
@@ -22,9 +21,13 @@ public class RafutationRunner : MonoBehaviour
     [SerializeField] private TextAsset sequenceCsv;
 
     [Header("연결 매니저")]
-    [SerializeField] private ChatDialogueManager chatManager;
+    [SerializeField] private ChatDialogueManager chatManager; // 💡 반드시 일반 대화용(DialougeManager_1) 연결
     [SerializeField] private RefutationManager refutationManager;
-    [SerializeField] private RafutationDialogueDatabase generalDialogueDb;
+    [SerializeField] private RefutationDialogueDatabase generalDialogueDb;
+
+    [Header("UI 그룹 제어")]
+    [SerializeField] private GameObject generalDialogueGroup; // 💡 새로 추가: 일반 대화 부모 오브젝트
+    [SerializeField] private GameObject refutationUIGroup;    // 💡 새로 추가: 논파 UI 부모 오브젝트
 
     private readonly List<SequenceStep> sequenceList = new();
     private int currentStepIndex = 0;
@@ -40,7 +43,7 @@ public class RafutationRunner : MonoBehaviour
         sequenceList.Clear();
         if (sequenceCsv == null) return;
 
-        List<string[]> rows = ParseCsv(sequenceCsv.text);
+        List<string[]> rows = CsvParser.Parse(sequenceCsv.text);
         for (int i = 1; i < rows.Count; i++)
         {
             string[] row = rows[i];
@@ -73,10 +76,26 @@ public class RafutationRunner : MonoBehaviour
         switch (step.stepType)
         {
             case StepType.DIALOGUE:
+                // 💡 1. 일반 대화 시작: 일반 UI 그룹을 켜고, 논파 UI 그룹을 확실히 끕니다.
+                if (generalDialogueGroup != null) generalDialogueGroup.SetActive(true);
+                if (refutationUIGroup != null) refutationUIGroup.SetActive(false);
+
+                if (refutationManager != null) 
+                {
+                    refutationManager.gameObject.SetActive(false);
+                }
                 RunDialogueStep(step.targetId);
                 break;
 
             case StepType.REFUTATION:
+                // 💡 2. 논파 시작: 일반 UI 그룹을 끄고, 논파 UI 그룹을 켭니다.
+                if (generalDialogueGroup != null) generalDialogueGroup.SetActive(false);
+                if (refutationUIGroup != null) refutationUIGroup.SetActive(true);
+
+                if (refutationManager != null) 
+                {
+                    refutationManager.gameObject.SetActive(true);
+                }
                 RunRefutationStep(step.targetId);
                 break;
 
@@ -156,35 +175,7 @@ public class RafutationRunner : MonoBehaviour
         }
         else
         {
-            Debug.Log($"[RafutationRunner] 씬 완료 판정: {isSuccess}");
+            Debug.Log($"[RefutationRunner] 씬 완료 판정: {isSuccess}");
         }
-    }
-
-    private List<string[]> ParseCsv(string csvText)
-    {
-        List<string[]> rows = new();
-        List<string> currentRow = new();
-        StringBuilder currentValue = new();
-        bool insideQuotes = false;
-
-        csvText = csvText.TrimStart('\uFEFF');
-        for (int i = 0; i < csvText.Length; i++)
-        {
-            char c = csvText[i];
-            if (c == '"') { insideQuotes = !insideQuotes; continue; }
-            if (c == ',' && !insideQuotes) { currentRow.Add(currentValue.ToString()); currentValue.Clear(); continue; }
-            if ((c == '\n' || c == '\r') && !insideQuotes)
-            {
-                if (c == '\r' && i + 1 < csvText.Length && csvText[i + 1] == '\n') continue;
-                currentRow.Add(currentValue.ToString()); currentValue.Clear();
-                if (currentRow.Count > 0) rows.Add(currentRow.ToArray());
-                currentRow.Clear();
-                continue;
-            }
-            currentValue.Append(c);
-        }
-        currentRow.Add(currentValue.ToString());
-        if (currentRow.Count > 0) rows.Add(currentRow.ToArray());
-        return rows;
     }
 }
