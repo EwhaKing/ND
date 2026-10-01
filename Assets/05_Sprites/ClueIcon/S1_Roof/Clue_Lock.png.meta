@@ -1,10 +1,22 @@
 fileFormatVersion: 2
-guid: a4d6f5bce641f5e4c9d35fea989ccce9
+guid: e5b6612368ef38e458273e4a2da655e5
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -9117567821937346944
-    second: Clue_Lock_0
+      213: -5620155193319629329
+    second: Lock_0
+  - first:
+      213: 717643947602433640
+    second: Lock_1
+  - first:
+      213: -7901436235853946331
+    second: Lock_2
+  - first:
+      213: 3383569086138778819
+    second: Lock_3
+  - first:
+      213: 342379830741364218
+    second: Lock_4
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -96,30 +108,17 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 4
-    buildTarget: WebGL
-    maxTextureSize: 2048
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Clue_Lock_0
+      name: Lock_0
       rect:
         serializedVersion: 2
-        x: 68
-        y: 0
-        width: 377
-        height: 512
+        x: 196
+        y: 118
+        width: 628
+        height: 780
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +127,96 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 08674e57f54e77180800000000000000
-      internalID: -9117567821937346944
+      spriteID: feddd97e0a23102b0800000000000000
+      internalID: -5620155193319629329
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Lock_1
+      rect:
+        serializedVersion: 2
+        x: 439
+        y: 882
+        width: 27
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8665d0c3e5595f900800000000000000
+      internalID: 717643947602433640
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Lock_2
+      rect:
+        serializedVersion: 2
+        x: 193
+        y: 643
+        width: 6
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 522a68a6b95785290800000000000000
+      internalID: -7901436235853946331
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Lock_3
+      rect:
+        serializedVersion: 2
+        x: 800
+        y: 477
+        width: 70
+        height: 34
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3c48b4c282ad4fe20800000000000000
+      internalID: 3383569086138778819
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Lock_4
+      rect:
+        serializedVersion: 2
+        x: 811
+        y: 386
+        width: 23
+        height: 36
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: afde89d54a060c400800000000000000
+      internalID: 342379830741364218
       vertices: []
       indices: 
       edges: []
@@ -148,7 +235,11 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Clue_Lock_0: -9117567821937346944
+      Lock_0: -5620155193319629329
+      Lock_1: 717643947602433640
+      Lock_2: -7901436235853946331
+      Lock_3: 3383569086138778819
+      Lock_4: 342379830741364218
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

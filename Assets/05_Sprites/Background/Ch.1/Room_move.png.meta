@@ -1,10 +1,34 @@
 fileFormatVersion: 2
-guid: 2546cc597be482248b3329e8c5db0438
+guid: 7d7b75d3caac62b44987d6411b23d291
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -397670327999257967
-    second: Clue_Cigrette_0
+      213: -6137725835518397819
+    second: Room_move_0
+  - first:
+      213: 5735485215995173185
+    second: Room_move_1
+  - first:
+      213: 811144493633944667
+    second: Room_move_2
+  - first:
+      213: 2174927639268655020
+    second: Room_move_3
+  - first:
+      213: 6450507556305067662
+    second: Room_move_4
+  - first:
+      213: 4740878248993641354
+    second: Room_move_5
+  - first:
+      213: -5015968548143088682
+    second: Room_move_6
+  - first:
+      213: 1046693063721617729
+    second: Room_move_7
+  - first:
+      213: 8410609359775610216
+    second: Room_move_8
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -96,40 +120,93 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 4
-    buildTarget: WebGL
-    maxTextureSize: 2048
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Clue_Cigrette_0
+      name: Room_move_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 450
-        height: 450
+        x: 1295
+        y: 1649
+        width: 305
+        height: 152
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 19224e191f03b7af0800000000000000
-      internalID: -397670327999257967
+      spriteID: 58230352fda62daa0800000000000000
+      internalID: -6137725835518397819
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Room_move_4
+      rect:
+        serializedVersion: 2
+        x: 2111
+        y: 748
+        width: 978
+        height: 410
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e8e598a327ec48950800000000000000
+      internalID: 6450507556305067662
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Room_move_7
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 580
+        height: 545
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1490efbbbc9968e00800000000000000
+      internalID: 1046693063721617729
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Room_move_8
+      rect:
+        serializedVersion: 2
+        x: 1645
+        y: 320
+        width: 269
+        height: 360
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8653002c6ac78b470800000000000000
+      internalID: 8410609359775610216
       vertices: []
       indices: 
       edges: []
@@ -138,7 +215,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 3b5ea6d884a64024498e6ac958eb06d2
     internalID: 0
     vertices: []
     indices: 
@@ -148,7 +225,15 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Clue_Cigrette_0: -397670327999257967
+      Room_move_0: -6137725835518397819
+      Room_move_1: 5735485215995173185
+      Room_move_2: 811144493633944667
+      Room_move_3: 2174927639268655020
+      Room_move_4: 6450507556305067662
+      Room_move_5: 4740878248993641354
+      Room_move_6: -5015968548143088682
+      Room_move_7: 1046693063721617729
+      Room_move_8: 8410609359775610216
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

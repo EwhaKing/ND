@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 5d6f0e50b5e677b489c6cfc586fc3818
+guid: 82e57acf59c067b40ab285548f6548c3
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 2662037821804270580
-    second: Clue_Students_0
+      213: -4181906289457810447
+    second: Letter_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -96,30 +96,17 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 4
-    buildTarget: WebGL
-    maxTextureSize: 2048
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Clue_Students_0
+      name: Letter_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 360
-        height: 360
+        x: 205
+        y: 96
+        width: 610
+        height: 884
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 4f35c4b7b4571f420800000000000000
-      internalID: 2662037821804270580
+      spriteID: 1f335ece262e6f5c0800000000000000
+      internalID: -4181906289457810447
       vertices: []
       indices: 
       edges: []
@@ -148,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Clue_Students_0: 2662037821804270580
+      Letter_0: -4181906289457810447
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

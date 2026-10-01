@@ -1,10 +1,22 @@
 fileFormatVersion: 2
-guid: 549020c700d7a5d4e9c506f501a70dfd
+guid: a86c5a26d57702b478dd50153e2e4575
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -965039813596905478
-    second: Clue_Garden_0
+      213: 703299354052898932
+    second: Room_front_0
+  - first:
+      213: -5429589912256164070
+    second: Room_front_1
+  - first:
+      213: 5730863740487573238
+    second: Room_front_2
+  - first:
+      213: 1734242927761224516
+    second: Room_front_3
+  - first:
+      213: 4705904328497603685
+    second: Room_front_4
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,23 +112,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Clue_Garden_0
+      name: Room_front_0
       rect:
         serializedVersion: 2
-        x: 42
+        x: 0
         y: 0
-        width: 428
-        height: 512
+        width: 3840
+        height: 2160
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: aff727c076d7b92f0800000000000000
-      internalID: -965039813596905478
+      spriteID: a4e6c36d18200c34aa27d21f418f18f4
+      internalID: 703299354052898932
       vertices: []
       indices: 
       edges: []
@@ -125,7 +137,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 5c1ae65842201be44a36263843b6f51b
     internalID: 0
     vertices: []
     indices: 
@@ -135,7 +147,11 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Clue_Garden_0: -965039813596905478
+      Room_front_0: 703299354052898932
+      Room_front_1: -5429589912256164070
+      Room_front_2: 5730863740487573238
+      Room_front_3: 1734242927761224516
+      Room_front_4: 4705904328497603685
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

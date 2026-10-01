@@ -20,7 +20,8 @@ public class RefutationDatabase : MonoBehaviour
     public class CustomWrongEntry
     {
         public string testimonyId; // 증언 ID
-        public string evidenceId; // 증거 ID
+        public string evidenceId;  // 증거 ID
+        public string speaker;     // 화자 이름
         public string wrongMessage; // 오답 대사
     }
 
@@ -31,7 +32,7 @@ public class RefutationDatabase : MonoBehaviour
     [SerializeField] private TextAsset customWrongCsv;
 
     private readonly Dictionary<string, RefutationEntry> table = new();   
-    private readonly Dictionary<string, CustomWrongEntry> wrongTable = new();
+    private readonly Dictionary<string, List<CustomWrongEntry>> wrongTable = new(); // 💡 List로 변경
 
     private void Awake()
     {
@@ -39,7 +40,6 @@ public class RefutationDatabase : MonoBehaviour
         LoadWrongCsv();
     }
 
-    // 논파 데이터 가져오기
     public RefutationEntry GetRefutationData(string id)
     {
         if (string.IsNullOrWhiteSpace(id)) return null;
@@ -47,19 +47,19 @@ public class RefutationDatabase : MonoBehaviour
         return null;
     }
 
-    // 오답 대사 가져오기
-    public string GetCustomWrongMessage(string testimonyId, string evidenceId)
+    /// <summary>
+    /// 특정 증언 및 증거에 지정된 오답 대사 목록(단일 또는 다중)을 가져옵니다.
+    /// </summary>
+    public List<CustomWrongEntry> GetCustomWrongDialogue(string testimonyId, string evidenceId)
     {
-        string key = $"{testimonyId}_{evidenceId}"; 
-        
-        if (wrongTable.TryGetValue(key, out var entry))
+        string key = $"{testimonyId}_{evidenceId}";
+        if (wrongTable.TryGetValue(key, out var list))
         {
-            return entry.wrongMessage;
+            return list;
         }
         return null;
     }
 
-    // CSV 파일 로드 및 파싱
     private void LoadCsv()
     {
         table.Clear();
@@ -86,7 +86,6 @@ public class RefutationDatabase : MonoBehaviour
         }
     }
 
-    // 오답 CSV 파일 로드 및 파싱
     private void LoadWrongCsv()
     {
         wrongTable.Clear();
@@ -100,21 +99,31 @@ public class RefutationDatabase : MonoBehaviour
 
             string tId = row[0].Trim();
             string eId = row[1].Trim();
-            string msg = row[2].Trim();
+
+            // 열 길이가 4 이상일 경우: testimonyId, evidenceId, speaker, wrongMessage
+            // 열 길이가 3일 경우: testimonyId, evidenceId, wrongMessage (speaker 없음 호환)
+            string speaker = row.Length >= 4 ? row[2].Trim() : string.Empty;
+            string msg = row.Length >= 4 ? row[3].Trim() : row[2].Trim();
 
             if (string.IsNullOrEmpty(tId) || string.IsNullOrEmpty(eId)) continue;
 
             string key = $"{tId}_{eId}";
-            wrongTable[key] = new CustomWrongEntry
+
+            if (!wrongTable.ContainsKey(key))
+            {
+                wrongTable.Add(key, new List<CustomWrongEntry>());
+            }
+
+            wrongTable[key].Add(new CustomWrongEntry
             {
                 testimonyId = tId,
                 evidenceId = eId,
+                speaker = speaker,
                 wrongMessage = msg
-            };
+            });
         }
     }
 
-    // CSV 텍스트를 파싱하여 2차원 배열로 반환
     private List<string[]> ParseCsv(string csvText)
     {
         List<string[]> rows = new();
