@@ -173,6 +173,7 @@ MonoBehaviour:
   snapSpeed: 20
   dropDistanceThreshold: 100
   parentAfterDrag: {fileID: 0}
+  puzzleInformation: {fileID: 11400000, guid: 7b5abd77ca8668144b02396fc79426f6, type: 2}
 --- !u!114 &32403568
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -331,6 +332,7 @@ MonoBehaviour:
   snapSpeed: 20
   dropDistanceThreshold: 100
   parentAfterDrag: {fileID: 0}
+  puzzleInformation: {fileID: 11400000, guid: 432067168563926409e30df8dab965f6, type: 2}
 --- !u!114 &373045889
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -515,6 +517,7 @@ MonoBehaviour:
   snapSpeed: 20
   dropDistanceThreshold: 100
   parentAfterDrag: {fileID: 0}
+  puzzleInformation: {fileID: 11400000, guid: d1dbb1493025b5744b259297c719b79d, type: 2}
 --- !u!114 &447473520
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -699,6 +702,7 @@ MonoBehaviour:
   snapSpeed: 20
   dropDistanceThreshold: 100
   parentAfterDrag: {fileID: 0}
+  puzzleInformation: {fileID: 11400000, guid: db813fa8c171d3b48abdc5498df220f4, type: 2}
 --- !u!114 &663793520
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1606,6 +1610,7 @@ MonoBehaviour:
   snapSpeed: 20
   dropDistanceThreshold: 100
   parentAfterDrag: {fileID: 0}
+  puzzleInformation: {fileID: 11400000, guid: 57a307b5d8fd8af479b3ebd9c981f279, type: 2}
 --- !u!114 &1507098802
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1698,6 +1703,7 @@ MonoBehaviour:
   snapSpeed: 20
   dropDistanceThreshold: 100
   parentAfterDrag: {fileID: 0}
+  puzzleInformation: {fileID: 11400000, guid: 50ba967c455ed0340b3144508c4e3102, type: 2}
 --- !u!114 &1522307787
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1957,6 +1963,7 @@ MonoBehaviour:
   snapSpeed: 20
   dropDistanceThreshold: 100
   parentAfterDrag: {fileID: 0}
+  puzzleInformation: {fileID: 11400000, guid: fd5d0c63c3596f34b978b39f8f6e6649, type: 2}
 --- !u!114 &1756667665
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2141,6 +2148,7 @@ MonoBehaviour:
   snapSpeed: 20
   dropDistanceThreshold: 100
   parentAfterDrag: {fileID: 0}
+  puzzleInformation: {fileID: 11400000, guid: 3b72ef54eba3c3847898e5dd75d4970e, type: 2}
 --- !u!114 &1844055451
 MonoBehaviour:
   m_ObjectHideFlags: 0

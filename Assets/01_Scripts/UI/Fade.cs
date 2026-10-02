@@ -5,11 +5,11 @@ using UnityEngine.UI;
 
 public class Fade : MonoBehaviour
 {
-    private Image fadeImage;
+    public Image fadeImage; // ShowCG에서 사용하기 위해 public으로 바꿨습니다
     [SerializeField] private float Duration = 0.5f;
     private Coroutine coroutine;
 
-    private void Awake()
+    private void Awake() 
     {
         fadeImage = GetComponentInChildren<Image>(true);
     }

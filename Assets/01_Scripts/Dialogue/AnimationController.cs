@@ -47,8 +47,8 @@ public class AnimationController : MonoBehaviour
     {
         yield return new WaitForSecondsRealtime(duration);
 
-        // 재생이 끝난 후 필요에 따라 비활성화 처리
-        gameObject.SetActive(false);
+        //  비활성화
+        //gameObject.SetActive(false);
         onComplete?.Invoke();
     }
 }

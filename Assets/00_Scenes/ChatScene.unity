@@ -3712,7 +3712,10 @@ MonoBehaviour:
     sprite: {fileID: 7924455469515830105, guid: eb8601d7081e8f245b0e14a9f4f1e777, type: 3}
   - code: god00
     standName: god
-    sprite: {fileID: 7352110951633436136, guid: 3a922b31ff76c764ab89cf71d4359c50, type: 3}
+    sprite: {fileID: 7352110951633436136, guid: b2605f9029c9e66449a4581235b96504, type: 3}
+  - code: god01
+    standName: god
+    sprite: {fileID: -8897450053788477073, guid: 75f65ef5d458dac44a09682a2bb7c040, type: 3}
   - code: yujeong00
     standName: yujeong
     sprite: {fileID: -7051579095965926118, guid: 18284d9d08674ac47b95a9966af74128, type: 3}
@@ -8259,7 +8262,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1941046938}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
@@ -8760,6 +8763,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c66e0b3ac7dfc354aab701ba0377a920, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fade
+  fadeImage: {fileID: 0}
   Duration: 0.5
 --- !u!1 &2087435283
 GameObject:

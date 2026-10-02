@@ -101,6 +101,8 @@ public class ScenarioStep
     [Header("Animation")]
     public AnimationClip animClip;
     public bool waitForCompletion = true; //애니메이션이 끝날 때까지 대사/다음 연출을 멈출지 여부
+    public float animwaitSeconds = 0.2f;      // 재생 완료 후 화면을 유지하며 멈춰있을 대기 시간
+    public float animfadeDuration = 0f;     // 암전(FadeOut)에 걸리는 시간
 }
 
 /// <summary>
