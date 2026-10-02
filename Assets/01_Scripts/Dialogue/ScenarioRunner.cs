@@ -460,7 +460,7 @@ public class ScenarioRunner : MonoBehaviour
     /// <summary>
     /// CG 이미지를 표시하고 클릭 입력을 기다립니다.
     /// </summary>
-    private IEnumerator ShowCG(ScenarioStep step)
+    /*private IEnumerator ShowCG(ScenarioStep step)
     {
         if (cgController == null)
         {
@@ -510,6 +510,69 @@ public class ScenarioRunner : MonoBehaviour
             yield return new WaitUntil(() => fadeInComplete);
         }
 
+        yield return new WaitUntil(
+            () => !isWaitingForCG
+        );
+
+        if (dialogueManager != null)
+        {
+            dialogueManager.ShowDialogueUI();
+        }
+    }*/
+    private IEnumerator ShowCG(ScenarioStep step)
+    {
+        if (cgController == null)
+        {
+            Debug.LogError("CGController가 연결되지 않았습니다.");
+            yield break;
+        }
+
+        if (step.cgSprite == null)
+        {
+            Debug.LogError("CGShow Step에 CG Sprite가 없습니다.");
+            yield break;
+        }
+
+        if (isSkipping)
+        {
+            yield break;
+        }
+
+        if (dialogueManager != null)
+        {
+            dialogueManager.HideDialogueUI();
+        }
+
+        // 이미 이전 애니메이션의 FadeOut으로 화면이 완전히 어두워진 상태가 아니라면 FadeOut 실행
+        if (fadeController != null && fadeController.fadeImage.color.a < 0.99f)
+        {
+            bool fadeOutComplete = false;
+            fadeController.FadeOut(-1f, 0f, () => fadeOutComplete = true);
+            yield return new WaitUntil(() => fadeOutComplete);
+        }
+
+        isWaitingForCG = true;
+
+        // 어두워진 검은 화면 뒤에서 CG 켜기 (배경 비침 100% 차단)
+        cgController.Show(
+            step.cgSprite,
+            OnCGClicked
+        );
+
+        // [FadeIn] CG가 배치된 후 서서히 화면을 밝게 만듦
+        if (fadeController != null)
+        {
+            if (step.fadeDuration > 0f)
+            {
+                yield return new WaitForSecondsRealtime(step.fadeDuration);
+            }
+
+            bool fadeInComplete = false;
+            fadeController.FadeIn(-1f, 0f, () => fadeInComplete = true);
+            yield return new WaitUntil(() => fadeInComplete);
+        }
+
+        // 클릭 입력을 기다림
         yield return new WaitUntil(
             () => !isWaitingForCG
         );
@@ -653,11 +716,18 @@ public class ScenarioRunner : MonoBehaviour
         return true;
     }
 
+
     private IEnumerator ShowAnimation(ScenarioStep step)
     {
-        if (animController == null || step.animClip == null)
+        if (animController == null)
         {
-            Debug.LogError("AnimationClipPlayer 또는 animClip이 설정되지 않았습니다.");
+            Debug.LogError("AnimationController가 연결되지 않았습니다.");
+            yield break;
+        }
+
+        if (step.animClip == null)
+        {
+            Debug.LogError("Animation Step에 AnimationClip이 없습니다.");
             yield break;
         }
 
@@ -666,15 +736,45 @@ public class ScenarioRunner : MonoBehaviour
             yield break;
         }
 
+        // 대화 UI 숨기기
+        if (dialogueManager != null)
+        {
+            dialogueManager.HideDialogueUI();
+        }
+
         bool isAnimFinished = false;
 
-        // 애니메이션 실행
-        animController.PlayClip(step.animClip, () => isAnimFinished = true);
+        // 1. 애니메이션 재생 시작 (페이드 없이 즉시 실행)
+        animController.PlayClip(
+            step.animClip,
+            () => isAnimFinished = true
+        );
 
+        // 2. 애니메이션 재생 완료 대기
         if (step.waitForCompletion)
         {
-            // 애니메이션 재생 시간만큼 대기
             yield return new WaitUntil(() => isAnimFinished);
         }
+
+        // 3. 애니메이션 종료 후 잠시 대기 (마지막 프레임 유지)
+        if (step.waitSeconds > 0f)
+        {
+            yield return new WaitForSecondsRealtime(step.animwaitSeconds);
+        }
+
+        // 4. FadeOut (서서히 암전)
+        if (fadeController != null)
+        {
+            float duration = step.animfadeDuration > 0f ? step.animfadeDuration : 0.5f;
+            bool fadeOutComplete = false;
+
+            fadeController.FadeOut(duration, 0f, () => fadeOutComplete = true);
+
+            // 화면이 완전히 검게 될 때까지 대기
+            yield return new WaitUntil(() => fadeOutComplete);
+        }
+
+        // 5. 화면이 완전히 어두워졌을 때 애니메이션 오브젝트 비활성화
+        animController.gameObject.SetActive(false);
     }
 }

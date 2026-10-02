@@ -13,6 +13,10 @@ public class PhotoItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
     public float dropDistanceThreshold = 100f;
 
     [HideInInspector] public Transform parentAfterDrag;
+
+    [Header("퍼즐 정보")]
+    [SerializeField] private PuzzleInformation puzzleInformation;
+
     
     private CanvasGroup canvasGroup;
     private Canvas mainCanvas;
