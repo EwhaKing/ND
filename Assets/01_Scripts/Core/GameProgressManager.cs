@@ -264,6 +264,50 @@ public class GameProgressManager : MonoBehaviour
         SceneManager.LoadScene(chatSceneName);
     }
 
+    // 현재 게임 상태를 SaveGameData 객체로 만들어 반환하는 함수
+    public SaveGameData CreateSaveData()
+    {
+        SaveGameData data = new SaveGameData();
+
+        // 1. 현재 메인 진행 단계 저장
+        data.currentProgressStep = this.CurrentStep;
+
+        // 2. 현재 대화/연출 위치 저장 (최신 Unity 추천 함수 사용)
+        ScenarioRunner runner = Object.FindAnyObjectByType<ScenarioRunner>();
+        if (runner != null)
+        {
+            data.scenarioStepIndex = runner.GetCurrentStepIndex();
+        }
+        else
+        {
+            data.scenarioStepIndex = 0;
+        }
+
+        // 3. 획득한 단서 목록 저장 (clueName 저장)
+        if (this.AcquiredClues != null)
+        {
+            foreach (var clue in this.AcquiredClues)
+            {
+                if (clue != null)
+                {
+                    data.acquiredClues.Add(clue.clueName);
+                }
+            }
+        }
+
+        // 4. 최종 판결 상태 저장 (값이 존재하는 경우에만 저장)
+        if (this.FinalVerdict.HasValue)
+        {
+            data.finalVerdict = this.FinalVerdict.Value;
+        }
+
+        // 5. 저장 시각 및 데이터 존재 여부
+        data.saveTime = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm");
+        data.hasData = true;
+
+        return data;
+    }
+
 }
 
 

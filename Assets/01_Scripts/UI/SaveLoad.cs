@@ -17,18 +17,12 @@ using UnityEngine.UI;
 ///
 /// 사용 위치:
 /// - SaveLoad 패널 프리팹에 붙여 사용
-/// - InGame에서 SaveLoad 프리팹을 생성한 뒤 Initalize()를 호출
+/// - InGame에서 SaveLoad 프리팹을 생성한 뒤 Initialize()를 호출
 ///
 /// 연결:
 /// - InGame에서 저장/불러오기 모드로 패널을 생성
 /// - PlayerPrefs를 통해 저장 날짜와 저장 이미지 경로를 읽고 씀
 /// - 저장 이미지 파일은 Application.persistentDataPath/SaveImages 경로에서 불러옴
-///
-/// TODO:
-/// - 저장 시 scenarioIndex, branchIndex 등 실제 게임 진행 데이터 저장 기능 연결 필요
-/// - Load 모드에서 저장 데이터를 실제로 불러오는 기능 추가 필요
-/// - 저장 슬롯에 챕터명/시나리오 정보를 표시하도록 Chapter 텍스트 저장 추가
-/// - PlayerPrefs.Save() 호출 여부 검토
 /// </summary>
 public enum SaveLoadType
 {
@@ -36,7 +30,7 @@ public enum SaveLoadType
     Load
 }
 
-public class SaveData
+public class SaveSlotUI
 {
     public TMP_Text Date;
     public TMP_Text Chapter;
@@ -50,10 +44,9 @@ public class SaveLoad : MonoBehaviour
     SaveLoadType m_Type;
     [SerializeField] private TMP_Text titleText;
     [SerializeField] private Transform gridParent;
-    List<SaveData> m_data = new();
 
-
-
+    // SaveData -> SaveSlotUI로 수정되었습니다.
+    List<SaveSlotUI> m_data = new();
 
     public void ClosePanel()
     {
@@ -70,7 +63,7 @@ public class SaveLoad : MonoBehaviour
         m_data.Clear();
         for (int i = 0; i < gridParent.childCount; i++)
         {
-            SaveData data = new SaveData();
+            SaveSlotUI data = new SaveSlotUI();
             var child = gridParent.GetChild(i);
             data.Date = child.Find("Date").GetComponent<TMP_Text>();
             data.Chapter = child.Find("Chapter").GetComponent<TMP_Text>();
@@ -82,7 +75,7 @@ public class SaveLoad : MonoBehaviour
         }
     }
 
-    public void Initalize(SaveLoadType type)
+    public void Initialize(SaveLoadType type)
     {
         m_Type = type;
         titleText.text = type == SaveLoadType.Save ? "저장하기" : "불러오기";
@@ -100,8 +93,7 @@ public class SaveLoad : MonoBehaviour
                     m_data[i].PlusImage.SetActive(true);
                     m_data[i].Date.gameObject.SetActive(false);
                     m_data[i].Chapter.gameObject.SetActive(false);
-                    
-                    m_data[index].MainButton.onClick.AddListener(() => Save(index));
+                    // 중복된 onClick.AddListener(Save) 구문 제거됨
                 }
                 else
                 {
@@ -110,11 +102,11 @@ public class SaveLoad : MonoBehaviour
                 }
             }
         }
-
-        else if(type==SaveLoadType.Load)
+        else if (type == SaveLoadType.Load)
         {
             for (int i = 0; i < m_data.Count; i++)
             {
+                int index = i;
                 m_data[i].MainButton.onClick.RemoveAllListeners();
 
                 m_data[i].PlusImage.SetActive(false);
@@ -124,6 +116,7 @@ public class SaveLoad : MonoBehaviour
                 if (!string.IsNullOrEmpty(PlayerPrefs.GetString($"#{i}_Date", "")))
                 {
                     m_data[i].MainButton.interactable = true;
+                    // Load 모드 시 실행할 불러오기 로직이 필요할 경우 여기에 AddListener 추가가 가능합니다.
                     LoadImages(i);
                 }
                 else
@@ -132,7 +125,6 @@ public class SaveLoad : MonoBehaviour
                 }
             }
         }
-        
     }
 
     void LoadImages(int index)
@@ -152,18 +144,17 @@ public class SaveLoad : MonoBehaviour
             return;
         }
 
-        byte[] bytes = System.IO.File.ReadAllBytes(path);
+        byte[] bytes = File.ReadAllBytes(path);
 
         Texture2D tex = new Texture2D(2, 2, TextureFormat.RGB24, false);
         tex.LoadImage(bytes);
 
+        // 이전 스프라이트/텍스처가 있다면 메모리 누수 방지를 위해 덮어쓰기 전 할당 관리 검토가 권장됩니다.
         Sprite sprite = Sprite.Create(
-        tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+            tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
 
         m_data[index].SaveMainImage.gameObject.SetActive(true);
-        m_data[index].SaveMainImage.sprite=sprite;
-
-
+        m_data[index].SaveMainImage.sprite = sprite;
     }
 
     public void Save(int value)
@@ -175,14 +166,32 @@ public class SaveLoad : MonoBehaviour
         if (InGame.Instance != null)
         {
             PlayerPrefs.SetString($"#{value}_Scenario", InGame.Instance.SaveBranch());
-            InGame.Instance.Capture(value, () => Initalize(SaveLoadType.Save));
+            InGame.Instance.Capture(value, () => Initialize(SaveLoadType.Save));
         }
         else
         {
             Debug.LogWarning("InGame.Instance가 null 상태입니다. UI만 갱신합니다.");
-            Initalize(SaveLoadType.Save);
+            Initialize(SaveLoadType.Save);
         }
-        
+
+        // --- [기존 작성하신 날짜 저장 및 스크린샷 캡처 로직이 실행된 후] ---
+
+        // 1. GameProgressManager로부터 현재 게임 세이브 데이터 생성
+        if (GameProgressManager.Instance != null)
+        {
+            SaveGameData gameData = GameProgressManager.Instance.CreateSaveData();
+            
+            // 2. JSON 문자열로 변환
+            string jsonText = JsonUtility.ToJson(gameData);
+            
+            // 3. PlayerPrefs에 저장 (슬롯 인덱스 활용, 예: "SaveData_Slot_0")
+            PlayerPrefs.SetString("SaveData_Slot_" + value, jsonText);
+            PlayerPrefs.Save();
+            
+            Debug.Log($"{value}번 슬롯에 게임 진행 데이터(JSON) 저장 완료!");
+        }
     }
 
+
+    
 }

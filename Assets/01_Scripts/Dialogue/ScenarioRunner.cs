@@ -71,6 +71,8 @@ public class ScenarioRunner : MonoBehaviour
     private bool isSkipping;
     private bool jumpRequested = false;
 
+    
+
     private System.Action onScenarioFinished;
 
     private void Start()
@@ -79,6 +81,11 @@ public class ScenarioRunner : MonoBehaviour
         {
             RunScenario(scenarioData);
         }
+    }
+
+    public int GetCurrentStepIndex()
+    {
+        return currentStepIndex;
     }
 
     /// <summary>
