@@ -71,6 +71,7 @@ public class ScenarioRunner : MonoBehaviour
     private bool isSkipping;
     private bool jumpRequested = false;
 
+    public ScenarioData CurrentScenarioData => scenarioData;
     
 
     private System.Action onScenarioFinished;
@@ -86,6 +87,29 @@ public class ScenarioRunner : MonoBehaviour
     public int GetCurrentStepIndex()
     {
         return currentStepIndex;
+    }
+
+        public void SetCurrentStepIndex(int index)
+    {
+        currentStepIndex = index;
+        // 필요 시 해당 인덱스의 대화/연출을 즉시 출력하도록 갱신 로직 호출
+    }
+
+    public void PlayFromCurrentIndex()
+    {
+        if (scenarioData == null) return;
+
+        // 실행 중이던 이전 코루틴이 있다면 정지
+        if (isRunning)
+        {
+            StopScenario();
+        }
+
+        // JumpToStep 방식과 동일하게 인덱스-1로 맞춘 후 코루틴 재시작
+        currentStepIndex = Mathf.Clamp(currentStepIndex - 1, -1, scenarioData.steps.Count - 1);
+        jumpRequested = true;
+
+        scenarioCoroutine = StartCoroutine(ScenarioRoutine(scenarioData));
     }
 
     /// <summary>

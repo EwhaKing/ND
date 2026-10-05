@@ -117,6 +117,7 @@ public class SaveLoad : MonoBehaviour
                 {
                     m_data[i].MainButton.interactable = true;
                     // Load 모드 시 실행할 불러오기 로직이 필요할 경우 여기에 AddListener 추가가 가능합니다.
+                    m_data[i].MainButton.onClick.AddListener(() => Load(index));
                     LoadImages(i);
                 }
                 else
@@ -185,13 +186,36 @@ public class SaveLoad : MonoBehaviour
             string jsonText = JsonUtility.ToJson(gameData);
             
             // 3. PlayerPrefs에 저장 (슬롯 인덱스 활용, 예: "SaveData_Slot_0")
-            PlayerPrefs.SetString("SaveData_Slot_" + value, jsonText);
+            PlayerPrefs.SetString("SaveData_Slot_" + value, JsonUtility.ToJson(gameData));
             PlayerPrefs.Save();
             
             Debug.Log($"{value}번 슬롯에 게임 진행 데이터(JSON) 저장 완료!");
         }
     }
+    public void Load(int value)
+    {
+        // 슬롯 키 이름
+        string key = "SaveData_Slot_" + value;
 
+        if (!PlayerPrefs.HasKey(key))
+        {
+            Debug.LogWarning($"{value}번 슬롯에 저장된 데이터가 없습니다.");
+            return;
+        }
 
+        // 1. JSON 불러오기
+        string jsonText = PlayerPrefs.GetString(key);
+        SaveGameData loadedData = JsonUtility.FromJson<SaveGameData>(jsonText);
+
+        // 2. 게임 상태 복원 (GameProgressManager가 내부에서 ScenarioRunner 대화 위치까지 복원함)
+        if (loadedData != null && GameProgressManager.Instance != null)
+        {
+            GameProgressManager.Instance.ApplySaveData(loadedData);
+            Debug.Log($"{value}번 슬롯 데이터 불러오기 성공!");
+        }
+
+        // 3. 세이브/로드 UI 팝업 창 닫기 (창이 꺼지면서 복원된 대화가 바로 보여짐)
+        this.gameObject.SetActive(false);
+    }
     
 }

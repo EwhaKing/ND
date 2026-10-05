@@ -54,6 +54,8 @@ public class GameProgressManager : MonoBehaviour
     [SerializeField] private string judgeSceneName = "JudgeScene";
     [SerializeField] private string miniGameSceneName = "MiniGameScene";
 
+    [SerializeField] private List<ScenarioData> scenarioList;
+
     private readonly List<ClueData> acquiredClues = new();
 
     public int PlayCount => playCount;
@@ -76,6 +78,11 @@ public class GameProgressManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
 
         LoadProgress();
+    }
+
+    private ScenarioData GetScenarioById(string id)
+    {
+        return scenarioList.Find(s => s.scenarioId == id || s.name == id);
     }
 
     private void LoadProgress()
@@ -277,6 +284,12 @@ public class GameProgressManager : MonoBehaviour
         if (runner != null)
         {
             data.scenarioStepIndex = runner.GetCurrentStepIndex();
+
+            if (runner.CurrentScenarioData != null)
+            {
+                data.scenarioId = runner.CurrentScenarioData.scenarioId;
+                // ※ ScenarioData 내 변수명이 scenarioId가 아니라 name이면 runner.CurrentScenarioData.name으로 작성
+            }
         }
         else
         {
@@ -306,6 +319,44 @@ public class GameProgressManager : MonoBehaviour
         data.hasData = true;
 
         return data;
+    }
+
+        // SaveGameData 데이터를 받아서 게임 상태를 복원하는 함수
+    public void ApplySaveData(SaveGameData data)
+    {
+        if (data == null) return;
+
+        // 1. 진행 단계 복원
+        this.currentStep = data.currentProgressStep;
+
+        // 2. 획득한 단서 목록 복원
+        // (기존 단서 리스트를 비우고 세이브 데이터의 단서 이름/ID에 해당하는 ClueData를 다시 채웁니다)
+        // ※ 프로젝트의 단서 데이터베이스/스크립터블 오브젝트 검색 방식에 맞춰 연동할 수 있습니다.
+        
+        // 3. 최종 판결 상태 복원
+        this.FinalVerdict = data.finalVerdict;
+
+        // 4. 대화/시나리오 위치 복원 (ScenarioRunner 연동)
+        ScenarioRunner runner = Object.FindAnyObjectByType<ScenarioRunner>();
+        if (runner != null)
+        {
+            // GameProgressManager에 연결된 ScenarioData 목록이나 Resources 폴더에서 scenarioId에 맞는 파일 가져오기
+            ScenarioData targetScenario = GetScenarioById(data.scenarioId);
+
+            if (targetScenario != null)
+            {
+                // 해당 시나리오 데이터로 ScenarioRunner 실행 후 저장된 스텝 위치로 이동
+                runner.RunScenario(targetScenario);
+                runner.SetCurrentStepIndex(data.scenarioStepIndex);
+                runner.PlayFromCurrentIndex();
+            }
+            else
+            {
+                Debug.LogError($"시나리오 데이터를 찾을 수 없습니다: {data.scenarioId}");
+            }
+        }
+
+        Debug.Log("[LoadSuccess] 게임 데이터 복원 완료!");
     }
 
 }

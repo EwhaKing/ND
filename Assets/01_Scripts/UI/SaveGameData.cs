@@ -5,6 +5,7 @@ using UnityEngine;
 [Serializable]
 public class SaveGameData
 {
+    public string scenarioId; //저장 시점의 시나리오/이름
     // 1. 진행 위치 정보
     public GameFlowStep currentProgressStep;
     public int scenarioStepIndex;
