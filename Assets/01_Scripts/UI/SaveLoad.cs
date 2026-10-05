@@ -88,16 +88,28 @@ public class SaveLoad : MonoBehaviour
                 m_data[i].MainButton.onClick.RemoveAllListeners();
                 m_data[i].MainButton.onClick.AddListener(() => Save(index));
 
+                // 기존 원본 키 규칙($"#{i}_Date") 유지
                 if (string.IsNullOrEmpty(PlayerPrefs.GetString($"#{i}_Date", "")))
                 {
                     m_data[i].PlusImage.SetActive(true);
                     m_data[i].Date.gameObject.SetActive(false);
                     m_data[i].Chapter.gameObject.SetActive(false);
-                    // 중복된 onClick.AddListener(Save) 구문 제거됨
                 }
                 else
                 {
                     m_data[i].PlusImage.SetActive(false);
+                    
+                    // [기존 원본 로직 복원] 날짜 표시 및 이미지 로드
+                    m_data[i].Date.gameObject.SetActive(true);
+                    m_data[i].Date.text = PlayerPrefs.GetString($"#{i}_Date", "");
+
+                    // [신규 추가] 챕터 텍스트 표시
+                    if (m_data[i].Chapter != null)
+                    {
+                        m_data[i].Chapter.gameObject.SetActive(true);
+                        m_data[i].Chapter.text = PlayerPrefs.GetString($"#{i}_Chapter", "프롤로그");
+                    }
+
                     LoadImages(i);
                 }
             }
@@ -110,18 +122,30 @@ public class SaveLoad : MonoBehaviour
                 m_data[i].MainButton.onClick.RemoveAllListeners();
 
                 m_data[i].PlusImage.SetActive(false);
-                m_data[i].Date.gameObject.SetActive(false);
-                m_data[i].Chapter.gameObject.SetActive(false);
 
+                // 기존 원본 키 규칙($"#{i}_Date") 유지
                 if (!string.IsNullOrEmpty(PlayerPrefs.GetString($"#{i}_Date", "")))
                 {
                     m_data[i].MainButton.interactable = true;
-                    // Load 모드 시 실행할 불러오기 로직이 필요할 경우 여기에 AddListener 추가가 가능합니다.
                     m_data[i].MainButton.onClick.AddListener(() => Load(index));
+
+                    // [기존 원본 로직 복원] 날짜 표시
+                    m_data[i].Date.gameObject.SetActive(true);
+                    m_data[i].Date.text = PlayerPrefs.GetString($"#{i}_Date", "");
+
+                    // [신규 추가] 챕터 텍스트 표시
+                    if (m_data[i].Chapter != null)
+                    {
+                        m_data[i].Chapter.gameObject.SetActive(true);
+                        m_data[i].Chapter.text = PlayerPrefs.GetString($"#{i}_Chapter", "프롤로그");
+                    }
+
                     LoadImages(i);
                 }
                 else
                 {
+                    m_data[i].Date.gameObject.SetActive(false);
+                    if (m_data[i].Chapter != null) m_data[i].Chapter.gameObject.SetActive(false);
                     m_data[i].MainButton.interactable = false;
                 }
             }
@@ -161,9 +185,21 @@ public class SaveLoad : MonoBehaviour
     public void Save(int value)
     {
         string date = DateTime.Now.ToString("yyyy.MM.dd HH:mm");
-
         PlayerPrefs.SetString($"#{value}_Date", date);
 
+        string chapterName = "프롤로그"; // 기본값
+        ScenarioRunner runner = UnityEngine.Object.FindAnyObjectByType<ScenarioRunner>();
+        if (runner != null && runner.CurrentScenarioData != null)
+        {
+            // ScenarioData에 적힌 ID 또는 이름 활용 (예: "챕터 1", "C1P" 등)
+            chapterName = runner.CurrentScenarioData.scenarioId; 
+        }
+
+        // [추가] PlayerPrefs에 챕터 텍스트 저장
+        string formattedChapter = GetFormattedChapterName(chapterName);
+        PlayerPrefs.SetString($"#{value}_Chapter", formattedChapter);
+
+        //캡쳐 및 UI 갱신
         if (InGame.Instance != null)
         {
             PlayerPrefs.SetString($"#{value}_Scenario", InGame.Instance.SaveBranch());
@@ -175,8 +211,6 @@ public class SaveLoad : MonoBehaviour
             Initialize(SaveLoadType.Save);
         }
 
-        // --- [기존 작성하신 날짜 저장 및 스크린샷 캡처 로직이 실행된 후] ---
-
         // 1. GameProgressManager로부터 현재 게임 세이브 데이터 생성
         if (GameProgressManager.Instance != null)
         {
@@ -186,7 +220,7 @@ public class SaveLoad : MonoBehaviour
             string jsonText = JsonUtility.ToJson(gameData);
             
             // 3. PlayerPrefs에 저장 (슬롯 인덱스 활용, 예: "SaveData_Slot_0")
-            PlayerPrefs.SetString("SaveData_Slot_" + value, JsonUtility.ToJson(gameData));
+            PlayerPrefs.SetString("SaveData_Slot_" + value, jsonText);
             PlayerPrefs.Save();
             
             Debug.Log($"{value}번 슬롯에 게임 진행 데이터(JSON) 저장 완료!");
@@ -210,12 +244,37 @@ public class SaveLoad : MonoBehaviour
         // 2. 게임 상태 복원 (GameProgressManager가 내부에서 ScenarioRunner 대화 위치까지 복원함)
         if (loadedData != null && GameProgressManager.Instance != null)
         {
-            GameProgressManager.Instance.ApplySaveData(loadedData);
-            Debug.Log($"{value}번 슬롯 데이터 불러오기 성공!");
+            
+            // 현재 씬 이름 확인
+            string currentSceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+
+            // [추가] 로비 씬에서 로드했을 경우 -> ChatScene으로 이동 후 데이터 적용
+            if (currentSceneName == "LobbyScene")
+            {
+                // 실제 게임 플레이 씬 이름(예: "ChatScene")을 정확히 적어주세요.
+                GameProgressManager.Instance.LoadGameAndChangeScene(loadedData, "ChatScene");
+            }
+            // [기존 코드 그대로] 게임 씬(ChatScene) 내부에서 로드했을 경우 -> 즉시 복원
+            else
+            {
+                GameProgressManager.Instance.ApplySaveData(loadedData);
+                Debug.Log($"{value}번 슬롯 데이터 불러오기 성공!");
+            }
         }
 
         // 3. 세이브/로드 UI 팝업 창 닫기 (창이 꺼지면서 복원된 대화가 바로 보여짐)
         this.gameObject.SetActive(false);
+    }
+
+    private string GetFormattedChapterName(string scenarioId)
+    {
+        if (string.IsNullOrEmpty(scenarioId)) return "프롤로그";
+
+        if (scenarioId.Contains("C1")) return "챕터 1";
+        if (scenarioId.Contains("C2")) return "챕터 2";
+        if (scenarioId.Contains("P")) return "프롤로그";
+
+        return scenarioId; // 매칭되는 게 없으면 기본 값 반환
     }
     
 }

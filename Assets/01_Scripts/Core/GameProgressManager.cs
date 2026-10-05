@@ -36,7 +36,8 @@ using UnityEngine.SceneManagement;
 public class GameProgressManager : MonoBehaviour
 {
     public static GameProgressManager Instance { get; private set; }
-
+    // 씬 이동 후 적용할 임시 세이브 데이터
+    private SaveGameData pendingSaveData = null;
     private const string PlayCountKey = "PlayCount";
 
     [Header("Debug")]
@@ -57,6 +58,7 @@ public class GameProgressManager : MonoBehaviour
     [SerializeField] private List<ScenarioData> scenarioList;
 
     private readonly List<ClueData> acquiredClues = new();
+
 
     public int PlayCount => playCount;
     public bool CanSkip => forceSkipForTesting || playCount >= 2;
@@ -84,6 +86,31 @@ public class GameProgressManager : MonoBehaviour
     {
         return scenarioList.Find(s => s.scenarioId == id || s.name == id);
     }
+    public void LoadGameAndChangeScene(SaveGameData data, string playSceneName = "ChatScene")
+    {
+        pendingSaveData = data;
+        
+        // 씬 로드 이벤트 등록 (씬 로드가 완료되면 OnSceneLoaded 실행)
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
+        
+        // 게임 플레이 씬으로 이동
+        UnityEngine.SceneManagement.SceneManager.LoadScene(playSceneName);
+    }
+
+    // 씬 로드가 완료되었을 때 실행되는 콜백
+    private void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
+    {
+        // 이벤트 해제
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
+
+        // 대기 중인 세이브 데이터가 있다면 적용
+        if (pendingSaveData != null)
+        {
+            ApplySaveData(pendingSaveData);
+            pendingSaveData = null; // 사용 후 초기화
+        }
+    }
+    
 
     private void LoadProgress()
     {
