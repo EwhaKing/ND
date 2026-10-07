@@ -1346,6 +1346,7 @@ MonoBehaviour:
   - 01_02
   - 01_03
   playerLife: 5
+  successCutinDuration: 3.5
   refutationArrowsUI: {fileID: 152466013}
   leftArrowBtn: {fileID: 245611835}
   rightArrowBtn: {fileID: 668208334}
@@ -1370,8 +1371,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 586595f54195a3d4bb1f527dbd38c359, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RefutationDatabase
-  refutationCsv: {fileID: 4900000, guid: 645e54414aa8a7a41857cc82bb9fac6c, type: 3}
-  customWrongCsv: {fileID: 4900000, guid: b0fc7bc221d986649a63c74cc062373f, type: 3}
 --- !u!114 &1068760405
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1384,7 +1383,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61119abe673b5dc47bf26c28cd57f711, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RefutationDialogueDatabase
-  dialogueCsv: {fileID: 4900000, guid: d05093d03ab12a745a2474841e52cdc9, type: 3}
 --- !u!114 &1068760406
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1397,12 +1395,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 96fde475e04be5940a73fc3a62526344, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RefutationRunner
-  sequenceCsv: {fileID: 4900000, guid: 8328e4cdd116e854c8b84f76535e9cfd, type: 3}
-  chatManager: {fileID: 1408619913}
-  refutationManager: {fileID: 1068760403}
+  dialogueManager: {fileID: 1408619913}
   generalDialogueDb: {fileID: 1068760405}
+  refutationManager: {fileID: 1068760403}
+  standingController: {fileID: 1880061915}
+  fadeController: {fileID: 0}
+  cgController: {fileID: 0}
   generalDialogueGroup: {fileID: 256511341}
   refutationUIGroup: {fileID: 2026853939}
+  stageMappings:
+  - step: 11
+    stageData: {fileID: 11400000, guid: 58981cd7c8613f5478cf9c6688180476, type: 2}
 --- !u!1 &1077471917
 GameObject:
   m_ObjectHideFlags: 0
@@ -2009,6 +2012,59 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &1575679643
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1575679645}
+  - component: {fileID: 1575679644}
+  m_Layer: 0
+  m_Name: GameProgressManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1575679644
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1575679643}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33c506ba65d9e4545bc293d9037551f0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameProgressManager
+  forceSkipForTesting: 1
+  playCount: 1
+  currentStep: 11
+  lobbySceneName: LobbyScene
+  chatSceneName: ChatScene
+  findSceneName: FindScene
+  refutationSceneName: RefutationScene
+  judgeSceneName: JudgeScene
+  miniGameSceneName: MiniGameScene
+--- !u!4 &1575679645
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1575679643}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 994.27124, y: 377.50104, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1619242197
 GameObject:
   m_ObjectHideFlags: 0
@@ -3262,6 +3318,7 @@ SceneRoots:
   m_Roots:
   - {fileID: 63742019}
   - {fileID: 553424619}
+  - {fileID: 1575679645}
   - {fileID: 1068760402}
   - {fileID: 1919290694}
   - {fileID: 1055409334}

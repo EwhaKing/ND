@@ -53,7 +53,6 @@ public class RefutationManager : MonoBehaviour
 
     private void Awake()
     {
-        // 💡 씬 실행 즉시 증거창과 성공 팝업을 강제로 꺼둡니다.
         if (evidenceSelectionPanel != null) evidenceSelectionPanel.SetActive(false);
         if (successPopupUI != null) successPopupUI.SetActive(false);
     }
@@ -88,6 +87,14 @@ public class RefutationManager : MonoBehaviour
             {
                 CloseEvidenceSelection();
             }
+        }
+    }
+
+    public void InitializeDatabase(RefutationData stageData)
+    {
+        if (refutationDatabase != null && stageData != null)
+        {
+            refutationDatabase.Initialize(stageData.refutationCsv, stageData.customWrongCsv);
         }
     }
 

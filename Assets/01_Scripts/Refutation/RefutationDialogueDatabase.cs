@@ -12,23 +12,9 @@ public class RefutationDialogueDatabase : MonoBehaviour
         public string expression;
     }
 
-    [Header("일반 대화 CSV")]
-    [SerializeField] private TextAsset dialogueCsv;
-
     private readonly Dictionary<string, List<DialogueData>> dialogueTable = new();
 
-    private void Awake()
-    {
-        LoadCsv();
-    }
-
-    public List<DialogueData> GetDialogueGroup(string groupId)
-    {
-        if (string.IsNullOrWhiteSpace(groupId)) return null;
-        return dialogueTable.TryGetValue(groupId, out var list) ? list : null;
-    }
-
-    private void LoadCsv()
+    public void Initialize(TextAsset dialogueCsv)
     {
         dialogueTable.Clear();
         if (dialogueCsv == null) return;
@@ -60,5 +46,11 @@ public class RefutationDialogueDatabase : MonoBehaviour
 
             dialogueTable[groupId].Add(data);
         }
+    }
+
+    public List<DialogueData> GetDialogueGroup(string groupId)
+    {
+        if (string.IsNullOrWhiteSpace(groupId)) return null;
+        return dialogueTable.TryGetValue(groupId, out var list) ? list : null;
     }
 }
