@@ -86,7 +86,7 @@ public class GameProgressManager : MonoBehaviour
     {
         return scenarioList.Find(s => s.scenarioId == id || s.name == id);
     }
-    public void LoadGameAndChangeScene(SaveGameData data, string playSceneName = "ChatScene")
+    public void LoadGameAndChangeScene(SaveGameData data, string playSceneName = "ChatScene") //이거 ChatScene으로 그냥 이동?
     {
         pendingSaveData = data;
         
@@ -298,6 +298,8 @@ public class GameProgressManager : MonoBehaviour
         SceneManager.LoadScene(chatSceneName);
     }
 
+
+    //SaveLoad관련 코드
     // 현재 게임 상태를 SaveGameData 객체로 만들어 반환하는 함수
     public SaveGameData CreateSaveData()
     {
@@ -306,7 +308,10 @@ public class GameProgressManager : MonoBehaviour
         // 1. 현재 메인 진행 단계 저장
         data.currentProgressStep = this.CurrentStep;
 
-        // 2. 현재 대화/연출 위치 저장 (최신 Unity 추천 함수 사용)
+        // 저장 시점의 현재 활성 씬 이름 기록
+        data.targetSceneName = SceneManager.GetActiveScene().name;
+
+        // 2. 현재 대화/연출 위치 저장 
         ScenarioRunner runner = Object.FindAnyObjectByType<ScenarioRunner>();
         if (runner != null)
         {
@@ -348,42 +353,79 @@ public class GameProgressManager : MonoBehaviour
         return data;
     }
 
-        // SaveGameData 데이터를 받아서 게임 상태를 복원하는 함수
+
+    // CurrentStep을 통해 이동해야 할 적절한 Target Scene 이름을 찾아주는 함수
+    public string GetTargetSceneByStep(GameFlowStep step)
+    {
+        switch (step)
+        {
+            case GameFlowStep.PrologueDialogue:
+            case GameFlowStep.Chapter1PrologueDialogue:
+            case GameFlowStep.Chapter1Stage1Dialogue:
+            case GameFlowStep.Chapter1Stage1Refutation1SuccessDialogue:
+            case GameFlowStep.Chapter1Stage1ConclusionSDialogue:
+            case GameFlowStep.Chapter1Stage1ConclutionFDialogue:
+            case GameFlowStep.Chapter1Stage2Dialogue:
+            case GameFlowStep.Chapter1Stage2RefutationSuccessDialogue:
+            case GameFlowStep.Stage2Intro:
+                return chatSceneName; // "ChatScene"
+
+            case GameFlowStep.InvestigationRoof:
+            case GameFlowStep.InvestigationGround:
+                return findSceneName; // "FindScene"
+
+            case GameFlowStep.Refutation:
+                return refutationSceneName; // "RefutationScene"
+
+            case GameFlowStep.Judgment:
+                return judgeSceneName; // "JudgeScene"
+
+            case GameFlowStep.MiniGame:
+                return miniGameSceneName; // "MiniGameScene"
+
+            default:
+                return chatSceneName;
+        }
+    }
+
+
+
+    // SaveGameData 데이터를 받아서 게임 상태를 복원하는 함수
     public void ApplySaveData(SaveGameData data)
     {
         if (data == null) return;
 
         // 1. 진행 단계 복원
         this.currentStep = data.currentProgressStep;
-
-        // 2. 획득한 단서 목록 복원
-        // (기존 단서 리스트를 비우고 세이브 데이터의 단서 이름/ID에 해당하는 ClueData를 다시 채웁니다)
-        // ※ 프로젝트의 단서 데이터베이스/스크립터블 오브젝트 검색 방식에 맞춰 연동할 수 있습니다.
-        
-        // 3. 최종 판결 상태 복원
         this.FinalVerdict = data.finalVerdict;
 
-        // 4. 대화/시나리오 위치 복원 (ScenarioRunner 연동)
-        ScenarioRunner runner = Object.FindAnyObjectByType<ScenarioRunner>();
-        if (runner != null)
-        {
-            // GameProgressManager에 연결된 ScenarioData 목록이나 Resources 폴더에서 scenarioId에 맞는 파일 가져오기
-            ScenarioData targetScenario = GetScenarioById(data.scenarioId);
+        
+        // 2. 단서 리스트 복원 로직 실행
+        // (여기서 acquiredClues 목록 재구현)
 
-            if (targetScenario != null)
+        // 3. 대화/시나리오 위치 복원 (ChatScene에 있을 때만 수행)
+        string currentScene = SceneManager.GetActiveScene().name;
+        if (currentScene == chatSceneName)
+        {
+            ScenarioRunner runner = Object.FindAnyObjectByType<ScenarioRunner>();
+            if (runner != null)
             {
-                // 해당 시나리오 데이터로 ScenarioRunner 실행 후 저장된 스텝 위치로 이동
-                runner.RunScenario(targetScenario);
-                runner.SetCurrentStepIndex(data.scenarioStepIndex);
-                runner.PlayFromCurrentIndex();
-            }
-            else
-            {
-                Debug.LogError($"시나리오 데이터를 찾을 수 없습니다: {data.scenarioId}");
+                ScenarioData targetScenario = GetScenarioById(data.scenarioId);
+
+                if (targetScenario != null)
+                {
+                    runner.RunScenario(targetScenario);
+                    runner.SetCurrentStepIndex(data.scenarioStepIndex);
+                    runner.PlayFromCurrentIndex();
+                }
+                else
+                {
+                    Debug.LogWarning($"ChatScene 시나리오 데이터 없음 (Step: {data.currentProgressStep} / ID: {data.scenarioId})");
+                }
             }
         }
 
-        Debug.Log("[LoadSuccess] 게임 데이터 복원 완료!");
+        Debug.Log($"[LoadSuccess] {currentScene} 씬 데이터 복원 완료!");
     }
 
 }

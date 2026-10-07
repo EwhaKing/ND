@@ -10,6 +10,9 @@ public class SaveGameData
     public GameFlowStep currentProgressStep;
     public int scenarioStepIndex;
 
+    // 로드할 때 진입해야 할 Unity 씬 이름 (예: "ChatScene", "FindScene" 등)
+    public string targetSceneName;
+
     // 2. 단서 및 진행 상태 (단서 이름 리스트)
     public List<string> acquiredClues = new List<string>();
     public JudgmentVerdict finalVerdict;

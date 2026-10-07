@@ -88,7 +88,7 @@ public class SaveLoad : MonoBehaviour
                 m_data[i].MainButton.onClick.RemoveAllListeners();
                 m_data[i].MainButton.onClick.AddListener(() => Save(index));
 
-                // 기존 원본 키 규칙($"#{i}_Date") 유지
+
                 if (string.IsNullOrEmpty(PlayerPrefs.GetString($"#{i}_Date", "")))
                 {
                     m_data[i].PlusImage.SetActive(true);
@@ -99,11 +99,11 @@ public class SaveLoad : MonoBehaviour
                 {
                     m_data[i].PlusImage.SetActive(false);
                     
-                    // [기존 원본 로직 복원] 날짜 표시 및 이미지 로드
+                    //  날짜 표시 및 이미지 로드
                     m_data[i].Date.gameObject.SetActive(true);
                     m_data[i].Date.text = PlayerPrefs.GetString($"#{i}_Date", "");
 
-                    // [신규 추가] 챕터 텍스트 표시
+                    // 챕터 텍스트 표시
                     if (m_data[i].Chapter != null)
                     {
                         m_data[i].Chapter.gameObject.SetActive(true);
@@ -123,17 +123,16 @@ public class SaveLoad : MonoBehaviour
 
                 m_data[i].PlusImage.SetActive(false);
 
-                // 기존 원본 키 규칙($"#{i}_Date") 유지
                 if (!string.IsNullOrEmpty(PlayerPrefs.GetString($"#{i}_Date", "")))
                 {
                     m_data[i].MainButton.interactable = true;
                     m_data[i].MainButton.onClick.AddListener(() => Load(index));
 
-                    // [기존 원본 로직 복원] 날짜 표시
+                    //날짜 표시
                     m_data[i].Date.gameObject.SetActive(true);
                     m_data[i].Date.text = PlayerPrefs.GetString($"#{i}_Date", "");
 
-                    // [신규 추가] 챕터 텍스트 표시
+                    //챕터 텍스트 표시
                     if (m_data[i].Chapter != null)
                     {
                         m_data[i].Chapter.gameObject.SetActive(true);
@@ -174,7 +173,6 @@ public class SaveLoad : MonoBehaviour
         Texture2D tex = new Texture2D(2, 2, TextureFormat.RGB24, false);
         tex.LoadImage(bytes);
 
-        // 이전 스프라이트/텍스처가 있다면 메모리 누수 방지를 위해 덮어쓰기 전 할당 관리 검토가 권장됩니다.
         Sprite sprite = Sprite.Create(
             tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
 
@@ -195,7 +193,7 @@ public class SaveLoad : MonoBehaviour
             chapterName = runner.CurrentScenarioData.scenarioId; 
         }
 
-        // [추가] PlayerPrefs에 챕터 텍스트 저장
+        //PlayerPrefs에 챕터 텍스트 저장
         string formattedChapter = GetFormattedChapterName(chapterName);
         PlayerPrefs.SetString($"#{value}_Chapter", formattedChapter);
 
@@ -245,16 +243,23 @@ public class SaveLoad : MonoBehaviour
         if (loadedData != null && GameProgressManager.Instance != null)
         {
             
-            // 현재 씬 이름 확인
+            // 2. 이동할 타겟 씬 판단
+            string destinationScene = loadedData.targetSceneName;
+            
+            // 만약 targetSceneName이 비어있다면 currentProgressStep을 기반으로 타겟 씬 자동 추론
+            if (string.IsNullOrEmpty(destinationScene))
+            {
+                destinationScene = GameProgressManager.Instance.GetTargetSceneByStep(loadedData.currentProgressStep);
+            }
+
             string currentSceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
 
-            // [추가] 로비 씬에서 로드했을 경우 -> ChatScene으로 이동 후 데이터 적용
-            if (currentSceneName == "LobbyScene")
+            // 3. 로비 씬이거나 현재 씬과 이동할 씬이 다를 경우 -> 해당 Target Scene으로 비동기/전환 후 데이터 적용
+            if (currentSceneName == "LobbyScene" || currentSceneName != destinationScene)
             {
-                // 실제 게임 플레이 씬 이름(예: "ChatScene")을 정확히 적어주세요.
-                GameProgressManager.Instance.LoadGameAndChangeScene(loadedData, "ChatScene");
+                GameProgressManager.Instance.LoadGameAndChangeScene(loadedData, destinationScene);
             }
-            // [기존 코드 그대로] 게임 씬(ChatScene) 내부에서 로드했을 경우 -> 즉시 복원
+            // 4. 동일한 씬 내부에서 로드했을 경우 -> 즉시 복원
             else
             {
                 GameProgressManager.Instance.ApplySaveData(loadedData);
