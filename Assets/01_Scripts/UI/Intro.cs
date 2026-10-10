@@ -29,6 +29,28 @@ public class Intro : MonoBehaviour
     [SerializeField] private GameObject settingPopup;
     [SerializeField] private GameObject collectionPopup;
 
+    [SerializeField] private GameObject saveLoadPanel; // 씬의 SaveLoad 패널 오브젝트
+    [SerializeField] private SaveLoad saveLoadUI;       // SaveLoad 스크립트 컴포넌트
+
+    // [이어하기] 버튼 클릭 시 호출할 메서드
+    public void GameContinue()
+    {
+        if (saveLoadPanel != null && saveLoadUI != null)
+        {
+            // 1. 패널 활성화
+            saveLoadPanel.SetActive(true);
+
+            // 2. Load 모드로 UI 초기화 및 데이터 갱신
+            saveLoadUI.Initialize(SaveLoadType.Load);
+        }
+        else
+        {
+            Debug.LogWarning("SaveLoadPanel 또는 SaveLoad 컴포넌트가 연결되지 않았습니다.");
+        }
+    }
+
+
+
     public void GameStart()
     {
         if (GameProgressManager.Instance == null)
@@ -78,10 +100,10 @@ public class Intro : MonoBehaviour
 
     public void GameExit()
     {
-#if UNITY_EDITOR
+    #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
-#else
+    #else
         Application.Quit();
-#endif
+    #endif
     }
 }

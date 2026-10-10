@@ -17,18 +17,12 @@ using UnityEngine.UI;
 ///
 /// 사용 위치:
 /// - SaveLoad 패널 프리팹에 붙여 사용
-/// - InGame에서 SaveLoad 프리팹을 생성한 뒤 Initalize()를 호출
+/// - InGame에서 SaveLoad 프리팹을 생성한 뒤 Initialize()를 호출
 ///
 /// 연결:
 /// - InGame에서 저장/불러오기 모드로 패널을 생성
 /// - PlayerPrefs를 통해 저장 날짜와 저장 이미지 경로를 읽고 씀
 /// - 저장 이미지 파일은 Application.persistentDataPath/SaveImages 경로에서 불러옴
-///
-/// TODO:
-/// - 저장 시 scenarioIndex, branchIndex 등 실제 게임 진행 데이터 저장 기능 연결 필요
-/// - Load 모드에서 저장 데이터를 실제로 불러오는 기능 추가 필요
-/// - 저장 슬롯에 챕터명/시나리오 정보를 표시하도록 Chapter 텍스트 저장 추가
-/// - PlayerPrefs.Save() 호출 여부 검토
 /// </summary>
 public enum SaveLoadType
 {
@@ -36,7 +30,7 @@ public enum SaveLoadType
     Load
 }
 
-public class SaveData
+public class SaveSlotUI
 {
     public TMP_Text Date;
     public TMP_Text Chapter;
@@ -50,10 +44,9 @@ public class SaveLoad : MonoBehaviour
     SaveLoadType m_Type;
     [SerializeField] private TMP_Text titleText;
     [SerializeField] private Transform gridParent;
-    List<SaveData> m_data = new();
 
-
-
+    // SaveData -> SaveSlotUI로 수정되었습니다.
+    List<SaveSlotUI> m_data = new();
 
     public void ClosePanel()
     {
@@ -70,7 +63,7 @@ public class SaveLoad : MonoBehaviour
         m_data.Clear();
         for (int i = 0; i < gridParent.childCount; i++)
         {
-            SaveData data = new SaveData();
+            SaveSlotUI data = new SaveSlotUI();
             var child = gridParent.GetChild(i);
             data.Date = child.Find("Date").GetComponent<TMP_Text>();
             data.Chapter = child.Find("Chapter").GetComponent<TMP_Text>();
@@ -82,7 +75,7 @@ public class SaveLoad : MonoBehaviour
         }
     }
 
-    public void Initalize(SaveLoadType type)
+    public void Initialize(SaveLoadType type)
     {
         m_Type = type;
         titleText.text = type == SaveLoadType.Save ? "저장하기" : "불러오기";
@@ -95,44 +88,67 @@ public class SaveLoad : MonoBehaviour
                 m_data[i].MainButton.onClick.RemoveAllListeners();
                 m_data[i].MainButton.onClick.AddListener(() => Save(index));
 
+
                 if (string.IsNullOrEmpty(PlayerPrefs.GetString($"#{i}_Date", "")))
                 {
                     m_data[i].PlusImage.SetActive(true);
                     m_data[i].Date.gameObject.SetActive(false);
                     m_data[i].Chapter.gameObject.SetActive(false);
-                    
-                    m_data[index].MainButton.onClick.AddListener(() => Save(index));
                 }
                 else
                 {
                     m_data[i].PlusImage.SetActive(false);
+                    
+                    //  날짜 표시 및 이미지 로드
+                    m_data[i].Date.gameObject.SetActive(true);
+                    m_data[i].Date.text = PlayerPrefs.GetString($"#{i}_Date", "");
+
+                    // 챕터 텍스트 표시
+                    if (m_data[i].Chapter != null)
+                    {
+                        m_data[i].Chapter.gameObject.SetActive(true);
+                        m_data[i].Chapter.text = PlayerPrefs.GetString($"#{i}_Chapter", "프롤로그");
+                    }
+
                     LoadImages(i);
                 }
             }
         }
-
-        else if(type==SaveLoadType.Load)
+        else if (type == SaveLoadType.Load)
         {
             for (int i = 0; i < m_data.Count; i++)
             {
+                int index = i;
                 m_data[i].MainButton.onClick.RemoveAllListeners();
 
                 m_data[i].PlusImage.SetActive(false);
-                m_data[i].Date.gameObject.SetActive(false);
-                m_data[i].Chapter.gameObject.SetActive(false);
 
                 if (!string.IsNullOrEmpty(PlayerPrefs.GetString($"#{i}_Date", "")))
                 {
                     m_data[i].MainButton.interactable = true;
+                    m_data[i].MainButton.onClick.AddListener(() => Load(index));
+
+                    //날짜 표시
+                    m_data[i].Date.gameObject.SetActive(true);
+                    m_data[i].Date.text = PlayerPrefs.GetString($"#{i}_Date", "");
+
+                    //챕터 텍스트 표시
+                    if (m_data[i].Chapter != null)
+                    {
+                        m_data[i].Chapter.gameObject.SetActive(true);
+                        m_data[i].Chapter.text = PlayerPrefs.GetString($"#{i}_Chapter", "프롤로그");
+                    }
+
                     LoadImages(i);
                 }
                 else
                 {
+                    m_data[i].Date.gameObject.SetActive(false);
+                    if (m_data[i].Chapter != null) m_data[i].Chapter.gameObject.SetActive(false);
                     m_data[i].MainButton.interactable = false;
                 }
             }
         }
-        
     }
 
     void LoadImages(int index)
@@ -152,37 +168,118 @@ public class SaveLoad : MonoBehaviour
             return;
         }
 
-        byte[] bytes = System.IO.File.ReadAllBytes(path);
+        byte[] bytes = File.ReadAllBytes(path);
 
         Texture2D tex = new Texture2D(2, 2, TextureFormat.RGB24, false);
         tex.LoadImage(bytes);
 
         Sprite sprite = Sprite.Create(
-        tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+            tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
 
         m_data[index].SaveMainImage.gameObject.SetActive(true);
-        m_data[index].SaveMainImage.sprite=sprite;
-
-
+        m_data[index].SaveMainImage.sprite = sprite;
     }
 
     public void Save(int value)
     {
         string date = DateTime.Now.ToString("yyyy.MM.dd HH:mm");
-
         PlayerPrefs.SetString($"#{value}_Date", date);
 
+        string chapterName = "프롤로그"; // 기본값
+        ScenarioRunner runner = UnityEngine.Object.FindAnyObjectByType<ScenarioRunner>();
+        if (runner != null && runner.CurrentScenarioData != null)
+        {
+            // ScenarioData에 적힌 ID 또는 이름 활용 (예: "챕터 1", "C1P" 등)
+            chapterName = runner.CurrentScenarioData.scenarioId; 
+        }
+
+        //PlayerPrefs에 챕터 텍스트 저장
+        string formattedChapter = GetFormattedChapterName(chapterName);
+        PlayerPrefs.SetString($"#{value}_Chapter", formattedChapter);
+
+        //캡쳐 및 UI 갱신
         if (InGame.Instance != null)
         {
             PlayerPrefs.SetString($"#{value}_Scenario", InGame.Instance.SaveBranch());
-            InGame.Instance.Capture(value, () => Initalize(SaveLoadType.Save));
+            InGame.Instance.Capture(value, () => Initialize(SaveLoadType.Save));
         }
         else
         {
             Debug.LogWarning("InGame.Instance가 null 상태입니다. UI만 갱신합니다.");
-            Initalize(SaveLoadType.Save);
+            Initialize(SaveLoadType.Save);
         }
-        
+
+        // 1. GameProgressManager로부터 현재 게임 세이브 데이터 생성
+        if (GameProgressManager.Instance != null)
+        {
+            SaveGameData gameData = GameProgressManager.Instance.CreateSaveData();
+            
+            // 2. JSON 문자열로 변환
+            string jsonText = JsonUtility.ToJson(gameData);
+            
+            // 3. PlayerPrefs에 저장 (슬롯 인덱스 활용, 예: "SaveData_Slot_0")
+            PlayerPrefs.SetString("SaveData_Slot_" + value, jsonText);
+            PlayerPrefs.Save();
+            
+            Debug.Log($"{value}번 슬롯에 게임 진행 데이터(JSON) 저장 완료!");
+        }
+    }
+    public void Load(int value)
+    {
+        // 슬롯 키 이름
+        string key = "SaveData_Slot_" + value;
+
+        if (!PlayerPrefs.HasKey(key))
+        {
+            Debug.LogWarning($"{value}번 슬롯에 저장된 데이터가 없습니다.");
+            return;
+        }
+
+        // 1. JSON 불러오기
+        string jsonText = PlayerPrefs.GetString(key);
+        SaveGameData loadedData = JsonUtility.FromJson<SaveGameData>(jsonText);
+
+        // 2. 게임 상태 복원 (GameProgressManager가 내부에서 ScenarioRunner 대화 위치까지 복원함)
+        if (loadedData != null && GameProgressManager.Instance != null)
+        {
+            
+            // 2. 이동할 타겟 씬 판단
+            string destinationScene = loadedData.targetSceneName;
+            
+            // 만약 targetSceneName이 비어있다면 currentProgressStep을 기반으로 타겟 씬 자동 추론
+            if (string.IsNullOrEmpty(destinationScene))
+            {
+                destinationScene = GameProgressManager.Instance.GetTargetSceneByStep(loadedData.currentProgressStep);
+            }
+
+            string currentSceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+
+            // 3. 로비 씬이거나 현재 씬과 이동할 씬이 다를 경우 -> 해당 Target Scene으로 비동기/전환 후 데이터 적용
+            if (currentSceneName == "LobbyScene" || currentSceneName != destinationScene)
+            {
+                GameProgressManager.Instance.LoadGameAndChangeScene(loadedData, destinationScene);
+            }
+            // 4. 동일한 씬 내부에서 로드했을 경우 -> 즉시 복원
+            else
+            {
+                GameProgressManager.Instance.ApplySaveData(loadedData);
+                Debug.Log($"{value}번 슬롯 데이터 불러오기 성공!");
+            }
+        }
+
+        // 3. 세이브/로드 UI 팝업 창 닫기 (창이 꺼지면서 복원된 대화가 바로 보여짐)
+        this.gameObject.SetActive(false);
     }
 
+    private string GetFormattedChapterName(string scenarioId)
+    {
+        if (string.IsNullOrEmpty(scenarioId)) return "프롤로그";
+
+        if (scenarioId.Contains("C1")) return "챕터 1";
+        if (scenarioId.Contains("C2")) return "챕터 2";
+        if (scenarioId.Contains("P")) return "프롤로그";
+
+        return scenarioId; // 매칭되는 게 없으면 기본 값 반환
+    }
+    
 }

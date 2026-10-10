@@ -63,7 +63,7 @@ public class InGame : MonoBehaviour
 
     var go = Instantiate(saveLoadPrefab, mainCanvas); 
     var script = go.GetComponent<SaveLoad>();
-    script.Initalize(type);
+    script.Initialize(type);
     }
 
 
