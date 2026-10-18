@@ -64,19 +64,43 @@ public class StandingController : MonoBehaviour
 
             images[i].sprite = defaultSprite;
             images[i].color = Color.white;
+            // 이미지 크기 원본 크기로 출력
+            images[i].SetNativeSize();
+            float bottomMargin = -512f;
+            float xPos = 0f;
 
-            if (stands.Length > 1)
+            if (stands.Length == 1)
+            {
+                // 1명: 중앙 배치
+                xPos = 0f;
+            }
+            else if (stands.Length == 2)
+            {
+                // 2명: 좌/우 대칭 배치
+                xPos = (i == 0) ? -450f : 450f;
+            }
+            else if (stands.Length >= 3)
+            {
+                // 3명: 좌 / 중앙 / 우 배치
+                if (i == 0) xPos = -550f;      // 왼쪽 캐릭터
+                else if (i == 1) xPos = 0f;    // 중앙 캐릭터
+                else if (i == 2) xPos = 550f;   // 오른쪽 캐릭터
+
+            }
+            images[i].rectTransform.anchoredPosition = new Vector2(xPos, bottomMargin);
+            /*if (stands.Length > 1)
             {
                 images[i].rectTransform.localPosition =
                     i == 0
-                        ? new Vector2(-450f, -75f)
-                        : new Vector2(450f, -75f);
+                        ? new Vector2(-450f, bottomMargin)
+                        : new Vector2(450f, bottomMargin);
             }
             else
             {
                 images[i].rectTransform.localPosition =
-                    new Vector2(0f, -75f);
-            }
+                    new Vector2(0f, bottomMargin);
+            }*/
+
         }
     }
     private Sprite FindDefaultSprite(string standName)
@@ -204,6 +228,7 @@ public class StandingController : MonoBehaviour
             }
 
             images[i].sprite = newSprite;
+            images[i].SetNativeSize();
 
             Debug.Log(
                 $"스탠딩 표정 변경: {standName} -> {newSprite.name}"
