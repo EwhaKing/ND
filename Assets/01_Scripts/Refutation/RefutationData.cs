@@ -8,7 +8,8 @@ public enum RefutationStepType
     StandingShow,
     DialogueGroup,
     RefutationGame,
-    CGShow
+    CGShow,
+    MiniGame
 }
 
 [Serializable]
@@ -25,25 +26,22 @@ public class RefutationStep
     [Header("Dialogue Group ID")]
     public string dialogueGroupId;
 
+    [Header("Refutation (증언 ID 목록)")]
+    public List<string> testimonyIds = new();
+
     [Header("CG Sprite")]
     public Sprite cgSprite;
 }
 
-[CreateAssetMenu(fileName = "NewRefutationData", menuName = "Refutation/Data")]
+[CreateAssetMenu(fileName = "NewRefutationData", menuName = "Refutation/Refutation Data")]
 public class RefutationData : ScriptableObject
 {
     public string stageId;
 
-    [Header("1. 일반 대화 CSV")]
-    public TextAsset stageDialogueCsv; // 일반 대화 CSV
+    [Header("1. 통합 대화 및 논파 CSV")]
+    public TextAsset refutationCsv;   
+    public TextAsset customWrongCsv; 
 
-    [Header("2. 논파 파트 CSV")]
-    public TextAsset refutationCsv;   // 메인 논파 CSV
-    public TextAsset customWrongCsv; // 커스텀 오답 CSV
-
-    [Header("3. 논파 증언 ID 목록")]
-    public List<string> testimonyIds = new();
-
-    [Header("4. 연출 순서 조립")]
+    [Header("2. 연출 순서 조립")]
     public List<RefutationStep> steps = new();
 }

@@ -1,5 +1,20 @@
-id,character,dialogue,expression,isWeakPoint,correctEvidenceId,,
-01_01,Character,빈혈 때문에 어지러워서,Character00,FALSE,,,
-01_02,Character,실수로 발을 헛디뎠단 말이에요!,Character01,TRUE,Test01,,
-01_03,Character,이대로 죽을 수는 없어요!,Character00,FALSE,,,
+id,character,dialogue,expression,standName,isWeakPoint,correctEvidenceId
+ref_01,유정,"쌤, 그럼 쌤이 저를 돌려보내주실 수 있는 거예요?",,yujeong,,
+ref_01,나,아무래도 그런 모양인데….,,player,,
+ref_01,유정,그럼 빨리 돌려보내주세요!,,yujeong,,
 
+S1R1_01,유정,빈혈 때문에 어지러워서,,yujeong,FALSE,
+S1R1_02,유정,실수로 발을 헛디뎠단 말이에요!,,yujeong,TRUE,C1_Roof_Slipper
+S1R1_03,유정,이대로 죽을 수는 없어요!,,yujeong,FALSE,
+
+ref_02,나,발을 헛디뎠다기엔 실내화가 지나치게 가지런하게 놓여있었어. 이건 어떻게 설명할 거지?,,player,,
+ref_02,유정,…알겠어요. 인정할게요. 순간적으로 죽고 싶었던 건 맞아요. 그렇지만 제게는 꼭 집에 돌아가야 할 이유가 있어요.,,yujeong,,
+ref_02,나,이유?,,player,,
+ref_02,유정,아빠가 집에서 기다리고 있단 말이에요!,,yujeong,,
+
+ref_03,나,아빠가 기다리신다고?,,,,
+ref_03,유정,"네, 그것도 오늘은 치킨을 사오시기로 했단 말이에요!",,,,
+ref_03,유정,못 믿겠으면 제 폰을 확인해보세요! 증거도 있어요!,,,,
+ref_03,나,네 폰?,,,,
+ref_03,유정,"아, 아까 주운 새 폰 있잖아요!",,,,
+ref_03,,유정이 잠금을 해제해준다.,,,,
