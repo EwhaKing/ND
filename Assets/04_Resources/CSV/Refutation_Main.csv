@@ -1,5 +1,4 @@
-id,character,dialogue,expression,isWeakPoint,correctEvidenceId,,
-01_01,Character,ë¹ˆí˜ˆ ë•Œë¬¸ì— ì–´ì§€ëŸ¬ì›Œì„œ,Character00,FALSE,,,
-01_02,Character,ì‹¤ìˆ˜ë¡œ ë°œì„ í—›ë””ë ë‹¨ ë§ì´ì—ìš”!,Character01,TRUE,Test01,,
-01_03,Character,ì´ëŒ€ë¡œ ì£½ì„ ìˆ˜ëŠ” ì—†ì–´ìš”!,Character00,FALSE,,,
-
+id,character,dialogue,expression,isWeakPoint,correctEvidenceId
+01_01,À¯Á¤,ºóÇ÷ ¶§¹®¿¡ ¾îÁö·¯¿ö¼­,,FALSE,
+01_02,À¯Á¤,½Ç¼ö·Î ¹ßÀ» Çêµğµ±´Ü ¸»ÀÌ¿¡¿ä!,Character01,TRUE,Test01
+01_03,À¯Á¤,ÀÌ´ë·Î Á×À» ¼ö´Â ¾ø¾î¿ä!,Character00,FALSE,
