@@ -4,103 +4,146 @@ using UnityEngine;
 
 public class RefutationRunner : MonoBehaviour
 {
-    public enum StepType
+    [Serializable]
+    public struct StageMapping
     {
-        DIALOGUE,
-        REFUTATION,
-        END
+        [Tooltip("GameProgressManager의 CurrentStep 값")]
+        public GameFlowStep step;
+        
+        [Tooltip("해당 Step에서 실행할 논파 StageData")]
+        public RefutationData stageData;
     }
 
-    public class SequenceStep
-    {
-        public StepType stepType;
-        public string targetId;
-    }
-
-    [Header("시퀀스 CSV")]
-    [SerializeField] private TextAsset sequenceCsv;
-
-    [Header("연결 매니저")]
-    [SerializeField] private ChatDialogueManager chatManager; // 💡 반드시 일반 대화용(DialougeManager_1) 연결
+    [Header("기존 매니저 연결")]
+    [SerializeField] private ChatDialogueManager dialogueManager;
+    [SerializeField] private RefutationDatabase refutationDatabase;
     [SerializeField] private RefutationManager refutationManager;
-    [SerializeField] private RefutationDialogueDatabase generalDialogueDb;
+    [SerializeField] private StandingController standingController;
+    [SerializeField] private Fade fadeController;
+    [SerializeField] private CGController cgController;
 
     [Header("UI 그룹 제어")]
-    [SerializeField] private GameObject generalDialogueGroup; // 💡 새로 추가: 일반 대화 부모 오브젝트
-    [SerializeField] private GameObject refutationUIGroup;    // 💡 새로 추가: 논파 UI 부모 오브젝트
+    [SerializeField] private GameObject generalDialogueGroup;
+    [SerializeField] private GameObject refutationUIGroup;
 
-    private readonly List<SequenceStep> sequenceList = new();
+    [Header("논파 데이터 매핑")]
+    [SerializeField] private List<StageMapping> stageMappings;
+
+    private RefutationData currentStageData;
     private int currentStepIndex = 0;
 
     private void Start()
     {
-        LoadSequenceCsv();
-        ExecuteCurrentStep();
+        if (GameProgressManager.Instance == null)
+        {
+            Debug.LogError("[RefutationRunner] GameProgressManager가 존재하지 않습니다.");
+            return;
+        }
+
+        currentStageData = GetStageDataByCurrentStep();
+
+        if (currentStageData == null)
+        {
+            Debug.LogError($"[RefutationRunner] 현재 Step({GameProgressManager.Instance.CurrentStep})에 매핑된 RefutationData가 없습니다.");
+            return;
+        }
+
+        RunStage(currentStageData);
     }
 
-    private void LoadSequenceCsv()
+    private RefutationData GetStageDataByCurrentStep()
     {
-        sequenceList.Clear();
-        if (sequenceCsv == null) return;
+        GameFlowStep currentStep = GameProgressManager.Instance.CurrentStep;
 
-        List<string[]> rows = CsvParser.Parse(sequenceCsv.text);
-        for (int i = 1; i < rows.Count; i++)
+        foreach (var map in stageMappings)
         {
-            string[] row = rows[i];
-            if (row.Length < 3) continue;
-
-            string typeStr = row[1].Trim().ToUpper();
-            string targetId = row[2].Trim();
-
-            if (Enum.TryParse<StepType>(typeStr, out var stepType))
+            if (map.step == currentStep)
             {
-                sequenceList.Add(new SequenceStep
-                {
-                    stepType = stepType,
-                    targetId = targetId
-                });
+                return map.stageData;
             }
         }
+
+        return null;
+    }
+
+    public void RunStage(RefutationData data)
+    {
+        currentStageData = data;
+        if (currentStageData == null) return;
+
+        if (refutationDatabase != null && currentStageData.refutationCsv != null)
+        {
+            refutationDatabase.Initialize(currentStageData.refutationCsv, currentStageData.customWrongCsv);
+        }
+
+        if (refutationManager != null)
+        {
+            refutationManager.InitializeDatabase(currentStageData);
+        }
+
+        currentStepIndex = 0;
+        ExecuteCurrentStep();
     }
 
     private void ExecuteCurrentStep()
     {
-        if (currentStepIndex >= sequenceList.Count)
+        if (currentStepIndex >= currentStageData.steps.Count)
         {
-            FinishScene(true);
+            FinishStage(true);
             return;
         }
 
-        SequenceStep step = sequenceList[currentStepIndex];
+        RefutationStep step = currentStageData.steps[currentStepIndex];
 
         switch (step.stepType)
         {
-            case StepType.DIALOGUE:
-                // 💡 1. 일반 대화 시작: 일반 UI 그룹을 켜고, 논파 UI 그룹을 확실히 끕니다.
-                if (generalDialogueGroup != null) generalDialogueGroup.SetActive(true);
-                if (refutationUIGroup != null) refutationUIGroup.SetActive(false);
-
-                if (refutationManager != null) 
-                {
-                    refutationManager.gameObject.SetActive(false);
-                }
-                RunDialogueStep(step.targetId);
+            case RefutationStepType.Fade:
+                if (fadeController != null)
+                    fadeController.FadeIn(step.fadeDuration, 0f, GoNextStep);
+                else
+                    GoNextStep();
                 break;
 
-            case StepType.REFUTATION:
-                // 💡 2. 논파 시작: 일반 UI 그룹을 끄고, 논파 UI 그룹을 켭니다.
+            case RefutationStepType.StandingShow:
+                if (standingController != null && step.stands != null)
+                    standingController.SetSprite(step.stands);
+                GoNextStep();
+                break;
+
+            case RefutationStepType.DialogueGroup:
+                if (generalDialogueGroup != null) generalDialogueGroup.SetActive(true);
+                if (refutationUIGroup != null) refutationUIGroup.SetActive(false);
+                RunDialogueGroupStep(step.dialogueGroupId);
+                break;
+
+            case RefutationStepType.RefutationGame:
                 if (generalDialogueGroup != null) generalDialogueGroup.SetActive(false);
                 if (refutationUIGroup != null) refutationUIGroup.SetActive(true);
 
-                if (refutationManager != null) 
+                if (refutationManager != null)
                 {
-                    refutationManager.gameObject.SetActive(true);
+                    refutationManager.StartRefutation(
+                        step.testimonyIds,
+                        onSuccess: GoNextStep,
+                        onFail: () => FinishStage(false)
+                    );
                 }
-                RunRefutationStep(step.targetId);
+                else
+                {
+                    GoNextStep();
+                }
                 break;
 
-            case StepType.END:
-                FinishScene(true);
+            case RefutationStepType.CGShow:
+                if (cgController != null && step.cgSprite != null)
+                    cgController.Show(step.cgSprite, GoNextStep);
+                else
+                    GoNextStep();
+                break;
+
+            case RefutationStepType.MiniGame:
+                Debug.LogWarning("[RefutationRunner] 미니게임 단계 호출");
+                GoNextStep();
                 break;
         }
     }
@@ -111,9 +154,9 @@ public class RefutationRunner : MonoBehaviour
         ExecuteCurrentStep();
     }
 
-    private void RunDialogueStep(string groupId)
+    private void RunDialogueGroupStep(string groupId)
     {
-        var rawDataList = generalDialogueDb != null ? generalDialogueDb.GetDialogueGroup(groupId) : null;
+        var rawDataList = refutationDatabase != null ? refutationDatabase.GetDialogueGroup(groupId) : null;
 
         if (rawDataList == null || rawDataList.Count == 0)
         {
@@ -121,61 +164,62 @@ public class RefutationRunner : MonoBehaviour
             return;
         }
 
-        List<ChatDialogueManager.DialogueLine> lines = new();
-        foreach (var item in rawDataList)
+        if (dialogueManager != null)
         {
-            lines.Add(new ChatDialogueManager.DialogueLine
+            dialogueManager.gameObject.SetActive(true);
+            dialogueManager.ShowDialogueUI();
+            
+            // 대사를 한 줄씩 순차적으로 재생하며 스탠딩 강조를 제어합니다.
+            PlayDialogueLine(rawDataList, 0);
+        }
+        else
+        {
+            GoNextStep();
+        }
+    }
+
+    // 대사를 한 줄씩 처리하는 재귀/순차 메서드
+    private void PlayDialogueLine(IList<RefutationDatabase.RefutationEntry> rawDataList, int index)
+    {
+        if (index >= rawDataList.Count)
+        {
+            // 모든 대사가 끝나면 다음 스텝으로 진행
+            GoNextStep();
+            return;
+        }
+
+        var item = rawDataList[index];
+
+        // 1. 현재 대사를 치는 캐릭터의 스탠딩을 밝게, 나머지를 회색조로 처리
+        if (standingController != null)
+        {
+            string targetStand = !string.IsNullOrWhiteSpace(item.standName) ? item.standName : item.character;
+            standingController.SetColor(targetStand);
+            
+            // 표정이 있다면 표정까지 함께 동적 제어
+            if (!string.IsNullOrWhiteSpace(item.expression))
             {
-                speaker = item.speaker,
-                dialogue = item.dialogue
+                standingController.SetExpression(item.expression);
+            }
+        }
+
+        // 2. 한 줄의 대사를 출력하고, 클릭해서 다음 줄로 넘어갈 때 콜백으로 다음 인덱스 호출
+        if (dialogueManager != null)
+        {
+            dialogueManager.ShowSingleLine(item.character, item.dialogue, () => {
+                PlayDialogueLine(rawDataList, index + 1);
             });
         }
-
-        if (chatManager != null)
-        {
-            chatManager.ShowDialogueUI();
-            chatManager.StartDialogue(lines.ToArray(), GoNextStep);
-        }
         else
         {
             GoNextStep();
         }
     }
 
-    private void RunRefutationStep(string testimonyIdsCsv)
+    private void FinishStage(bool isSuccess)
     {
-        List<string> testimonyList = new List<string>(
-            testimonyIdsCsv.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-        );
+        Debug.Log($"[RefutationRunner] 스테이지 완료 콜백 호출 (성공 여부: {isSuccess})");
 
-        for (int i = 0; i < testimonyList.Count; i++)
-        {
-            testimonyList[i] = testimonyList[i].Trim();
-        }
-
-        if (refutationManager != null)
-        {
-            refutationManager.StartRefutation(
-                testimonyList,
-                onSuccess: GoNextStep,
-                onFail: () => FinishScene(false)
-            );
-        }
-        else
-        {
-            GoNextStep();
-        }
-    }
-
-    private void FinishScene(bool isSuccess)
-    {
-        if (GameProgressManager.Instance != null)
-        {
-            GameProgressManager.Instance.OnRefutationFinished(isSuccess);
-        }
-        else
-        {
-            Debug.Log($"[RefutationRunner] 씬 완료 판정: {isSuccess}");
-        }
+        GameProgressManager.Instance?.OnRefutationFinished(isSuccess);
     }
 }

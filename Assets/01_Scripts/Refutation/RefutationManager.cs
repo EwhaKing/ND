@@ -37,7 +37,6 @@ public class RefutationManager : MonoBehaviour
 
     [Header("Standing")]
     [SerializeField] private StandingController standingController;
-    [SerializeField] private string characterStandName = "기본";
 
     [Header("Default Responses")]
     [SerializeField] private string defaultWrongMessage = "이건 모순과 관련 없는 것 같아.";
@@ -53,7 +52,6 @@ public class RefutationManager : MonoBehaviour
 
     private void Awake()
     {
-        // 💡 씬 실행 즉시 증거창과 성공 팝업을 강제로 꺼둡니다.
         if (evidenceSelectionPanel != null) evidenceSelectionPanel.SetActive(false);
         if (successPopupUI != null) successPopupUI.SetActive(false);
     }
@@ -91,6 +89,14 @@ public class RefutationManager : MonoBehaviour
         }
     }
 
+    public void InitializeDatabase(RefutationData stageData)
+    {
+        if (refutationDatabase != null && stageData != null)
+        {
+            refutationDatabase.Initialize(stageData.refutationCsv, stageData.customWrongCsv);
+        }
+    }
+
     public void StartRefutation(List<string> testimonies, Action onSuccess, Action onFail)
     {
         this.testimonyIdList = testimonies;
@@ -110,23 +116,17 @@ public class RefutationManager : MonoBehaviour
         isWaitingForClick = false;
         isRefutationFinished = false;
 
-        // 💡 UI 초기 상태 리셋
+        // UI 초기 상태 리셋
         if (refutationUIGroup != null) refutationUIGroup.SetActive(true);
         if (generalDialogueGroup != null) generalDialogueGroup.SetActive(false);
 
         if (refutationArrowsUI != null) refutationArrowsUI.SetActive(true);
         if (successPopupUI != null) successPopupUI.SetActive(false);
         
-        // 💡 증거 선택 창(CluePanel)을 명시적으로 숨김
+        // 증거 선택 창(CluePanel)을 명시적으로 숨김
         if (evidenceSelectionPanel != null) evidenceSelectionPanel.SetActive(false);
 
         UpdateLifeUI();
-
-        if (standingController != null)
-        {
-            StandStep[] stands = { new StandStep { standName = characterStandName } };
-            standingController.SetSprite(stands);
-        }
 
         ShowCurrentLine();
     }
@@ -152,7 +152,10 @@ public class RefutationManager : MonoBehaviour
                 {
                     standingController.SetExpression(entry.expression);
                 }
-                standingController.SetColor(entry.character);
+                
+                // character(표시용 이름) 대신 standName(스탠딩 고유 식별자) 전달
+                string targetStand = !string.IsNullOrWhiteSpace(entry.standName) ? entry.standName : entry.character;
+                standingController.SetColor(targetStand);
             }
         }
 
@@ -173,7 +176,7 @@ public class RefutationManager : MonoBehaviour
 
         isSelectingEvidence = false;
 
-        // 💡 2. 오답 연출 시: 논파 UI 그룹을 끄고, 일반 대화 UI 그룹을 켬
+        // 2. 오답 연출 시: 논파 UI 그룹을 끄고, 일반 대화 UI 그룹을 켬
         if (refutationUIGroup != null) refutationUIGroup.SetActive(false);
         if (generalDialogueGroup != null) generalDialogueGroup.SetActive(true);
 
@@ -217,11 +220,11 @@ public class RefutationManager : MonoBehaviour
         isWaitingForClick = false;
         isSelectingEvidence = false;
 
-        // 💡 3. 증언으로 복귀 시: 일반 대화 UI 그룹을 끄고, 논파 UI 그룹을 켬
+        // 3. 증언으로 복귀 시: 일반 대화 UI 그룹을 끄고, 논파 UI 그룹을 켬
         if (generalDialogueGroup != null) generalDialogueGroup.SetActive(false);
         if (refutationUIGroup != null) refutationUIGroup.SetActive(true);
 
-        if (refutationArrowsUI != null) refutationArrowsUI.SetActive(true);
+        if (refutationArrowsUI != null) refutationArrowsUI.SetActive(false);
         ShowCurrentLine();
     }
 
@@ -314,7 +317,7 @@ public class RefutationManager : MonoBehaviour
     {
         isSelectingEvidence = false;
         isWaitingForClick = false;
-        isRefutationFinished = true; // 💡 Update() 내의 마우스/키보드 입력을 완전히 차단
+        isRefutationFinished = true; // Update() 내의 마우스/키보드 입력을 완전히 차단
 
         // 단서 창 및 논파 UI 요소 숨김
         if (evidenceSelectionPanel != null) evidenceSelectionPanel.SetActive(false);
