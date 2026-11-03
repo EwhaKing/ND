@@ -64,9 +64,14 @@ public class DialogueSceneController : MonoBehaviour
             $"CurrentStep = {GameProgressManager.Instance.CurrentStep}"
         );
 
+        // 세이브 로드로 들어온 경우 저장된 Step 부터 이어서 시작 (일반 진입이면 0)
+        int startStepIndex =
+            GameProgressManager.Instance.ConsumeResumeStepIndex();
+
         scenarioRunner.RunScenario(
             scenarioToPlay,
-            OnScenarioFinished
+            OnScenarioFinished,
+            startStepIndex
         );
     }
 

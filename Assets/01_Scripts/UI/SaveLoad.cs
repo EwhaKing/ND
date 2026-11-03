@@ -168,6 +168,14 @@ public class SaveLoad : MonoBehaviour
             return;
         }
 
+        // 이전에 만든 썸네일 텍스처 정리 (메모리 누수 방지)
+        Sprite oldSprite = m_data[index].SaveMainImage.sprite;
+        if (oldSprite != null && oldSprite.name == "SaveThumbnail") // 프리팹 기본 스프라이트(에셋)는 건드리지 않음
+        {
+            Destroy(m_data[index].SaveMainImage.sprite.texture);
+            Destroy(m_data[index].SaveMainImage.sprite);
+        }
+
         byte[] bytes = File.ReadAllBytes(path);
 
         Texture2D tex = new Texture2D(2, 2, TextureFormat.RGB24, false);
@@ -177,6 +185,7 @@ public class SaveLoad : MonoBehaviour
             tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
 
         m_data[index].SaveMainImage.gameObject.SetActive(true);
+        sprite.name = "SaveThumbnail";
         m_data[index].SaveMainImage.sprite = sprite;
     }
 
@@ -185,22 +194,29 @@ public class SaveLoad : MonoBehaviour
         string date = DateTime.Now.ToString("yyyy.MM.dd HH:mm");
         PlayerPrefs.SetString($"#{value}_Date", date);
 
-        string chapterName = "프롤로그"; // 기본값
-        ScenarioRunner runner = UnityEngine.Object.FindAnyObjectByType<ScenarioRunner>();
-        if (runner != null && runner.CurrentScenarioData != null)
+        // 챕터 문구는 현재 진행 단계(currentStep)로 결정한다.
+        // (조사 씬에는 ScenarioRunner 가 없어서 시나리오 이름을 알 수 없다)
+        string chapterLabel = GameProgressManager.Instance != null
+            ? GameProgressManager.Instance.GetChapterLabel()
+            : "프롤로그";
+        PlayerPrefs.SetString($"#{value}_Chapter", chapterLabel);
+
+        // 게임 진행 데이터(JSON) 저장 - 화면 캡처보다 먼저 확정해서 저장한다.
+        if (GameProgressManager.Instance != null)
         {
-            // ScenarioData에 적힌 ID 또는 이름 활용 (예: "챕터 1", "C1P" 등)
-            chapterName = runner.CurrentScenarioData.scenarioId; 
+            SaveGameData gameData = GameProgressManager.Instance.CreateSaveData();
+            PlayerPrefs.SetString("SaveData_Slot_" + value, JsonUtility.ToJson(gameData));
+        }
+        else
+        {
+            Debug.LogWarning("GameProgressManager.Instance가 null 입니다. 진행 데이터는 저장되지 않습니다.");
         }
 
-        //PlayerPrefs에 챕터 텍스트 저장
-        string formattedChapter = GetFormattedChapterName(chapterName);
-        PlayerPrefs.SetString($"#{value}_Chapter", formattedChapter);
+        PlayerPrefs.Save();
 
-        //캡쳐 및 UI 갱신
+        // 캡쳐 및 UI 갱신
         if (InGame.Instance != null)
         {
-            PlayerPrefs.SetString($"#{value}_Scenario", InGame.Instance.SaveBranch());
             InGame.Instance.Capture(value, () => Initialize(SaveLoadType.Save));
         }
         else
@@ -208,25 +224,10 @@ public class SaveLoad : MonoBehaviour
             Debug.LogWarning("InGame.Instance가 null 상태입니다. UI만 갱신합니다.");
             Initialize(SaveLoadType.Save);
         }
-
-        // 1. GameProgressManager로부터 현재 게임 세이브 데이터 생성
-        if (GameProgressManager.Instance != null)
-        {
-            SaveGameData gameData = GameProgressManager.Instance.CreateSaveData();
-            
-            // 2. JSON 문자열로 변환
-            string jsonText = JsonUtility.ToJson(gameData);
-            
-            // 3. PlayerPrefs에 저장 (슬롯 인덱스 활용, 예: "SaveData_Slot_0")
-            PlayerPrefs.SetString("SaveData_Slot_" + value, jsonText);
-            PlayerPrefs.Save();
-            
-            Debug.Log($"{value}번 슬롯에 게임 진행 데이터(JSON) 저장 완료!");
-        }
     }
+
     public void Load(int value)
     {
-        // 슬롯 키 이름
         string key = "SaveData_Slot_" + value;
 
         if (!PlayerPrefs.HasKey(key))
@@ -235,51 +236,31 @@ public class SaveLoad : MonoBehaviour
             return;
         }
 
-        // 1. JSON 불러오기
-        string jsonText = PlayerPrefs.GetString(key);
-        SaveGameData loadedData = JsonUtility.FromJson<SaveGameData>(jsonText);
-
-        // 2. 게임 상태 복원 (GameProgressManager가 내부에서 ScenarioRunner 대화 위치까지 복원함)
-        if (loadedData != null && GameProgressManager.Instance != null)
+        if (GameProgressManager.Instance == null)
         {
-            
-            // 2. 이동할 타겟 씬 판단
-            string destinationScene = loadedData.targetSceneName;
-            
-            // 만약 targetSceneName이 비어있다면 currentProgressStep을 기반으로 타겟 씬 자동 추론
-            if (string.IsNullOrEmpty(destinationScene))
-            {
-                destinationScene = GameProgressManager.Instance.GetTargetSceneByStep(loadedData.currentProgressStep);
-            }
-
-            string currentSceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
-
-            // 3. 로비 씬이거나 현재 씬과 이동할 씬이 다를 경우 -> 해당 Target Scene으로 비동기/전환 후 데이터 적용
-            if (currentSceneName == "LobbyScene" || currentSceneName != destinationScene)
-            {
-                GameProgressManager.Instance.LoadGameAndChangeScene(loadedData, destinationScene);
-            }
-            // 4. 동일한 씬 내부에서 로드했을 경우 -> 즉시 복원
-            else
-            {
-                GameProgressManager.Instance.ApplySaveData(loadedData);
-                Debug.Log($"{value}번 슬롯 데이터 불러오기 성공!");
-            }
+            Debug.LogError("GameProgressManager.Instance가 null 입니다. 불러올 수 없습니다.");
+            return;
         }
 
-        // 3. 세이브/로드 UI 팝업 창 닫기 (창이 꺼지면서 복원된 대화가 바로 보여짐)
-        this.gameObject.SetActive(false);
+        SaveGameData loadedData = JsonUtility.FromJson<SaveGameData>(PlayerPrefs.GetString(key));
+        if (loadedData == null)
+        {
+            Debug.LogWarning($"{value}번 슬롯 데이터를 읽지 못했습니다.");
+            return;
+        }
+
+        // 이동할 씬 결정 (저장된 씬 이름이 없으면 진행 단계로 추론)
+        string destinationScene = loadedData.targetSceneName;
+        if (string.IsNullOrEmpty(destinationScene))
+        {
+            destinationScene = GameProgressManager.Instance.GetTargetSceneByStep(loadedData.currentProgressStep);
+        }
+
+        // 같은 씬이어도 항상 씬을 다시 로드한다.
+        // (FindScene 옥상 -> 땅처럼 씬 이름은 같고 진행 단계만 다른 경우,
+        //  씬을 다시 시작해야 조사 컨트롤러가 새 단계를 읽는다)
+        GameProgressManager.Instance.LoadGameAndChangeScene(loadedData, destinationScene);
+
+        Destroy(gameObject);
     }
-
-    private string GetFormattedChapterName(string scenarioId)
-    {
-        if (string.IsNullOrEmpty(scenarioId)) return "프롤로그";
-
-        if (scenarioId.Contains("C1")) return "챕터 1";
-        if (scenarioId.Contains("C2")) return "챕터 2";
-        if (scenarioId.Contains("P")) return "프롤로그";
-
-        return scenarioId; // 매칭되는 게 없으면 기본 값 반환
-    }
-    
 }

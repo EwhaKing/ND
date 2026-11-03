@@ -38,6 +38,10 @@ public class GameProgressManager : MonoBehaviour
     public static GameProgressManager Instance { get; private set; }
     // 씬 이동 후 적용할 임시 세이브 데이터
     private SaveGameData pendingSaveData = null;
+
+    // 로드 직후 ChatScene에서 이어서 시작할 Step 번호 (-1 = 없음)
+    // DialogueSceneController.Start()가 한 번 읽고 소모한다.
+    private int pendingResumeStepIndex = -1;
     private const string PlayCountKey = "PlayCount";
 
     [Header("Debug")]
@@ -55,8 +59,13 @@ public class GameProgressManager : MonoBehaviour
     [SerializeField] private string judgeSceneName = "JudgeScene";
     [SerializeField] private string miniGameSceneName = "MiniGameScene";
 
+    // (이제 로드에서는 사용하지 않음: 시나리오는 currentStep 으로 결정한다. 기존 Inspector 값 보존용)
     [SerializeField] private List<ScenarioData> scenarioList;
 
+    [Header("Clue Database (세이브 복원용)")]
+    [Tooltip("게임에 나오는 모든 ClueData(조합 결과 단서 포함)를 넣어주세요. 비워두면 Resources 폴더에서 찾습니다.")]
+    [SerializeField] private List<ClueData> clueDatabase = new();
+    private bool clueDatabaseFromResourcesLoaded = false;
     private readonly List<ClueData> acquiredClues = new();
 
 
@@ -82,35 +91,35 @@ public class GameProgressManager : MonoBehaviour
         LoadProgress();
     }
 
-    private ScenarioData GetScenarioById(string id)
-    {
-        return scenarioList.Find(s => s.scenarioId == id || s.name == id);
-    }
-    public void LoadGameAndChangeScene(SaveGameData data, string playSceneName = "ChatScene") //이거 ChatScene으로 그냥 이동?
+    /// <summary>
+    /// 세이브 데이터를 들고 목적지 씬으로 이동한다.
+    /// 같은 씬(예: FindScene 옥상 -> 땅)이라도 항상 씬을 다시 로드해서
+    /// 각 씬의 컨트롤러가 Start()에서 새 CurrentStep 을 읽도록 한다.
+    /// </summary>
+    public void LoadGameAndChangeScene(SaveGameData data, string playSceneName = "ChatScene")
     {
         pendingSaveData = data;
-        
-        // 씬 로드 이벤트 등록 (씬 로드가 완료되면 OnSceneLoaded 실행)
-        UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
-        
-        // 게임 플레이 씬으로 이동
-        UnityEngine.SceneManagement.SceneManager.LoadScene(playSceneName);
+
+        // 중복 등록 방지 후 등록
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+        SceneManager.sceneLoaded += OnSceneLoaded;
+
+        SceneManager.LoadScene(playSceneName);
     }
 
-    // 씬 로드가 완료되었을 때 실행되는 콜백
-    private void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
+    // 씬 로드가 완료되었을 때(Awake/OnEnable 이후, Start 이전) 실행되는 콜백
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // 이벤트 해제
-        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
+        SceneManager.sceneLoaded -= OnSceneLoaded;
 
-        // 대기 중인 세이브 데이터가 있다면 적용
         if (pendingSaveData != null)
         {
-            ApplySaveData(pendingSaveData);
-            pendingSaveData = null; // 사용 후 초기화
+            SaveGameData data = pendingSaveData;
+            pendingSaveData = null;
+            ApplySaveData(data);
         }
     }
-    
+
 
     private void LoadProgress()
     {
@@ -124,6 +133,12 @@ public class GameProgressManager : MonoBehaviour
     {
         acquiredClues.Clear();
         FinalVerdict = null;
+        pendingResumeStepIndex = -1;
+
+        if (InventoryManager.Instance != null)
+        {
+            InventoryManager.Instance.ClearInventory();
+        }
 
         currentStep = GameFlowStep.PrologueDialogue;
 
@@ -223,10 +238,31 @@ public class GameProgressManager : MonoBehaviour
             return;
         }
 
-        if (!acquiredClues.Contains(clueData))
+        if (!acquiredClues.Exists(c => c != null && c.clueID == clueData.clueID))
         {
             acquiredClues.Add(clueData);
         }
+    }
+
+    /// <summary>
+    /// 해당 clueID 의 단서를 이미 획득했는지 (세이브 로드 후 조사 오브젝트 복원에 사용)
+    /// </summary>
+    public bool HasClue(string clueID)
+    {
+        if (string.IsNullOrWhiteSpace(clueID)) return false;
+        return acquiredClues.Exists(c => c != null && c.clueID == clueID);
+    }
+
+    /// <summary>
+    /// 시나리오 선택지(LoadScene)처럼 GameProgressManager 를 거치지 않고 씬을 직접 이동할 때,
+    /// 이동할 씬에 맞게 진행 단계(currentStep)를 맞춰준다.
+    /// (안 맞추면 논파 씬이 "Chapter1Stage1Dialogue"로 시작해서 데이터를 못 찾는다)
+    /// </summary>
+    public void SetStepByScene(string sceneName)
+    {
+        if (sceneName == refutationSceneName) currentStep = GameFlowStep.Refutation;
+        else if (sceneName == judgeSceneName) currentStep = GameFlowStep.Judgment;
+        else if (sceneName == miniGameSceneName) currentStep = GameFlowStep.MiniGame;
     }
 
     public void CompletePlaythrough()
@@ -328,15 +364,12 @@ public class GameProgressManager : MonoBehaviour
             data.scenarioStepIndex = 0;
         }
 
-        // 3. 획득한 단서 목록 저장 (clueName 저장)
-        if (this.AcquiredClues != null)
+        // 3. 획득한 단서 목록 저장 (clueID 기준)
+        foreach (var clue in acquiredClues)
         {
-            foreach (var clue in this.AcquiredClues)
+            if (clue != null && !string.IsNullOrWhiteSpace(clue.clueID))
             {
-                if (clue != null)
-                {
-                    data.acquiredClues.Add(clue.clueName);
-                }
+                data.acquiredClues.Add(clue.clueID);
             }
         }
 
@@ -349,6 +382,9 @@ public class GameProgressManager : MonoBehaviour
         // 5. 저장 시각 및 데이터 존재 여부
         data.saveTime = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm");
         data.hasData = true;
+
+        Debug.Log($"[Save] step={data.currentProgressStep} / scene={data.targetSceneName} / " +
+                  $"stepIndex={data.scenarioStepIndex} / clues={data.acquiredClues.Count}");
 
         return data;
     }
@@ -390,42 +426,101 @@ public class GameProgressManager : MonoBehaviour
 
 
 
+    // ClueID(또는 예전 세이브의 clueName)로 ClueData 를 찾는다.
+    private ClueData FindClueByKey(string key)
+    {
+        if (string.IsNullOrWhiteSpace(key)) return null;
+
+        ClueData found = clueDatabase.Find(c => c != null && (c.clueID == key || c.clueName == key));
+        if (found != null) return found;
+
+        // Inspector 에 등록 안 된 단서는 Resources 폴더에서 한 번만 불러와 보충
+        if (!clueDatabaseFromResourcesLoaded)
+        {
+            clueDatabaseFromResourcesLoaded = true;
+            foreach (ClueData c in Resources.LoadAll<ClueData>(""))
+            {
+                if (c != null && !clueDatabase.Contains(c)) clueDatabase.Add(c);
+            }
+            return clueDatabase.Find(c => c != null && (c.clueID == key || c.clueName == key));
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// 저장 화면에 표시할 챕터 문구. 현재 진행 단계(currentStep)로 결정한다.
+    /// (조사 씬에는 ScenarioRunner 가 없으므로 시나리오 이름으로는 알 수 없음)
+    /// </summary>
+    public string GetChapterLabel()
+    {
+        switch (currentStep)
+        {
+            case GameFlowStep.PrologueDialogue:
+                return "프롤로그";
+            case GameFlowStep.InvestigationRoof:
+                return "챕터 1 - 옥상";
+            case GameFlowStep.InvestigationGround:
+                return "챕터 1 - 땅";
+            case GameFlowStep.Refutation:
+                return "챕터 1 - 논파";
+            case GameFlowStep.Judgment:
+                return "챕터 1 - 심판";
+            case GameFlowStep.MiniGame:
+                return "챕터 1 - 미니게임";
+            case GameFlowStep.None:
+                return "프롤로그";
+            default:
+                return "챕터 1";
+        }
+    }
+
+    /// <summary>
+    /// 대화 씬에서 이어서 시작할 Step 번호를 한 번만 돌려준다. 없으면 0.
+    /// </summary>
+    public int ConsumeResumeStepIndex()
+    {
+        int index = Mathf.Max(0, pendingResumeStepIndex);
+        pendingResumeStepIndex = -1;
+        return index;
+    }
+
     // SaveGameData 데이터를 받아서 게임 상태를 복원하는 함수
+    // (씬 로드 직후, 각 오브젝트의 Start() 이전에 호출된다)
     public void ApplySaveData(SaveGameData data)
     {
         if (data == null) return;
 
         // 1. 진행 단계 복원
-        this.currentStep = data.currentProgressStep;
-        this.FinalVerdict = data.finalVerdict;
+        currentStep = data.currentProgressStep;
+        FinalVerdict = data.finalVerdict;
 
-        
-        // 2. 단서 리스트 복원 로직 실행
-        // (여기서 acquiredClues 목록 재구현)
-
-        // 3. 대화/시나리오 위치 복원 (ChatScene에 있을 때만 수행)
-        string currentScene = SceneManager.GetActiveScene().name;
-        if (currentScene == chatSceneName)
+        // 2. 단서 복원: GameProgressManager 목록을 먼저 갱신
+        acquiredClues.Clear();
+        foreach (string key in data.acquiredClues)
         {
-            ScenarioRunner runner = Object.FindAnyObjectByType<ScenarioRunner>();
-            if (runner != null)
+            ClueData clue = FindClueByKey(key);
+            if (clue == null)
             {
-                ScenarioData targetScenario = GetScenarioById(data.scenarioId);
-
-                if (targetScenario != null)
-                {
-                    runner.RunScenario(targetScenario);
-                    runner.SetCurrentStepIndex(data.scenarioStepIndex);
-                    runner.PlayFromCurrentIndex();
-                }
-                else
-                {
-                    Debug.LogWarning($"ChatScene 시나리오 데이터 없음 (Step: {data.currentProgressStep} / ID: {data.scenarioId})");
-                }
+                Debug.LogWarning($"[Load] 단서를 찾을 수 없습니다: {key} (clueDatabase에 ClueData 등록 필요)");
+                continue;
             }
+
+            if (!acquiredClues.Contains(clue)) acquiredClues.Add(clue);
         }
 
-        Debug.Log($"[LoadSuccess] {currentScene} 씬 데이터 복원 완료!");
+        // 2-1. 이미 살아있는 InventoryManager 가 있다면 내용을 교체 (없으면 Start()에서 스스로 동기화)
+        if (InventoryManager.Instance != null)
+        {
+            InventoryManager.Instance.ReplaceAll(acquiredClues);
+        }
+
+        // 3. 대화 위치: 씬 로드 후 DialogueSceneController.Start()가 읽어서 이어서 재생한다.
+        //    (여기서 ScenarioRunner 를 직접 건드리면 곧바로 실행되는 Start()에 덮어써진다)
+        bool isDialogueStep = GetTargetSceneByStep(currentStep) == chatSceneName;
+        pendingResumeStepIndex = isDialogueStep ? Mathf.Max(0, data.scenarioStepIndex) : -1;
+
+        Debug.Log($"[LoadSuccess] step={currentStep} / 단서 {acquiredClues.Count}개 / resumeIndex={pendingResumeStepIndex}");
     }
 
 }

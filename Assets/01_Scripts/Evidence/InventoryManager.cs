@@ -59,7 +59,50 @@ public class InventoryManager : MonoBehaviour
 
     private void Start()
     {
+        // 씬이 바뀌면서 이 InventoryManager 가 새로 만들어졌을 수 있으므로,
+        // GameProgressManager(DontDestroyOnLoad)가 기억하는 단서로 채운다.
+        SyncFromProgress();
         UpdateInventoryUI();
+    }
+
+    /// <summary>
+    /// GameProgressManager 의 획득 단서 목록을 이 인벤토리에 복사한다.
+    /// 조사 진행도 갱신/팝업 없이 "조용히" 채운다.
+    /// </summary>
+    public void SyncFromProgress()
+    {
+        if (GameProgressManager.Instance == null) return;
+
+        foreach (ClueData clue in GameProgressManager.Instance.AcquiredClues)
+        {
+            AddItemSilently(clue);
+        }
+    }
+
+    /// <summary>
+    /// 세이브 로드 시 인벤토리 전체를 주어진 목록으로 교체한다.
+    /// </summary>
+    public void ReplaceAll(IEnumerable<ClueData> clues)
+    {
+        acquiredItems.Clear();
+        acquiredItemsDict.Clear();
+
+        foreach (ClueData clue in clues)
+        {
+            AddItemSilently(clue);
+        }
+
+        UpdateInventoryUI();
+    }
+
+    // 목록/딕셔너리에만 추가 (GameProgressManager 등록, InvestigationManager 진행도 갱신 없음)
+    private void AddItemSilently(ClueData clue)
+    {
+        if (clue == null || string.IsNullOrWhiteSpace(clue.clueID)) return;
+        if (acquiredItemsDict.ContainsKey(clue.clueID)) return;
+
+        acquiredItems.Add(clue);
+        acquiredItemsDict[clue.clueID] = clue;
     }
 
     /// <summary>

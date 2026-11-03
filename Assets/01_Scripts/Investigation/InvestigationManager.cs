@@ -106,27 +106,32 @@ public class InvestigationManager : MonoBehaviour
     // 조사율 업데이트 메서드
     public void UpdateProgress(ClueData acquiredClue, bool updateUI = true)
     {
-        if (acquiredClue == null) return;
-
-        if (stageClues.Contains(acquiredClue) && !countedClues.Contains(acquiredClue))
+        if (CountClue(acquiredClue) && updateUI)
         {
-            countedClues.Add(acquiredClue); 
-
-            if (acquiredClue.clueType == ClueType.Core) 
-            {
-                foundCoreCount++;
-            }
-            foundProgressCount++;
-
-            progressRate = Mathf.FloorToInt(((float)foundProgressCount / totalProgressCount) * 100f);
-
-            if (updateUI)
-            {
-                UpdateUI();
-            }
+            UpdateUI();
         }
     }
-    
+
+    // 이 스테이지의 단서라면 조사율에 한 번만 반영한다. 반영했으면 true.
+    private bool CountClue(ClueData clue)
+    {
+        if (clue == null) return false;
+        if (!stageClues.Contains(clue) || countedClues.Contains(clue)) return false;
+
+        countedClues.Add(clue);
+
+        if (clue.clueType == ClueType.Core)
+        {
+            foundCoreCount++;
+        }
+        foundProgressCount++;
+
+        progressRate = totalProgressCount > 0
+            ? Mathf.FloorToInt(((float)foundProgressCount / totalProgressCount) * 100f)
+            : 0;
+
+        return true;
+    }
 
     // 조사 종료 활성화 메서드
     private void EnableToFinish()
@@ -229,6 +234,15 @@ public class InvestigationManager : MonoBehaviour
             $"전체 단서={totalProgressCount}, " +
             $"핵심 단서={totalCoreCount}"
         );
+
+        // 세이브 로드 등으로 이미 획득한 단서가 있다면 조사율에 미리 반영
+        if (GameProgressManager.Instance != null)
+        {
+            foreach (ClueData owned in GameProgressManager.Instance.AcquiredClues)
+            {
+                CountClue(owned);
+            }
+        }
 
         UpdateUI();
     }
