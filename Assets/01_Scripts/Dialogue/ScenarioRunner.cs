@@ -95,23 +95,6 @@ public class ScenarioRunner : MonoBehaviour
         // 필요 시 해당 인덱스의 대화/연출을 즉시 출력하도록 갱신 로직 호출
     }
 
-    public void PlayFromCurrentIndex()
-    {
-        if (scenarioData == null) return;
-
-        // 실행 중이던 이전 코루틴이 있다면 정지
-        if (isRunning)
-        {
-            StopScenario();
-        }
-
-        // JumpToStep 방식과 동일하게 인덱스-1로 맞춘 후 코루틴 재시작
-        currentStepIndex = Mathf.Clamp(currentStepIndex - 1, -1, scenarioData.steps.Count - 1);
-        jumpRequested = true;
-
-        scenarioCoroutine = StartCoroutine(ScenarioRoutine(scenarioData));
-    }
-
     /// <summary>
     /// Inspector에 연결된 기본 ScenarioData를 실행합니다.
     /// 버튼 테스트나 단독 테스트용으로 사용할 수 있습니다.
@@ -127,7 +110,8 @@ public class ScenarioRunner : MonoBehaviour
     /// </summary>
     public void RunScenario(
         ScenarioData targetScenario,
-        System.Action finishedCallback = null)
+        System.Action finishedCallback = null,
+        int startStepIndex = 0)
     {
         if (targetScenario == null)
         {
@@ -149,13 +133,16 @@ public class ScenarioRunner : MonoBehaviour
             StopScenario();
         }
 
-        currentStepIndex = 0;
+        startStepIndex = Mathf.Clamp(startStepIndex, 0, targetScenario.steps.Count);
+
+        currentStepIndex = startStepIndex;
         sceneLoadRequested = false;
         isSkipping = false;
+        jumpRequested = false;
         onScenarioFinished = finishedCallback;
 
         scenarioCoroutine = StartCoroutine(
-            ScenarioRoutine(targetScenario)
+            ScenarioRoutine(targetScenario, startStepIndex)
         );
     }
 
@@ -181,11 +168,22 @@ public class ScenarioRunner : MonoBehaviour
     /// <summary>
     /// ScenarioData의 Step을 처음부터 끝까지 순서대로 실행합니다.
     /// </summary>
-    private IEnumerator ScenarioRoutine(ScenarioData targetScenario)
+    private IEnumerator ScenarioRoutine(ScenarioData targetScenario, int startStepIndex = 0)
     {
         isRunning = true;
 
-        for (currentStepIndex = 0;
+        // 중간부터 시작(세이브 로드)하는 경우:
+        // 건너뛰는 구간의 스탠딩 표시/숨김만 순서대로 재현해서 화면 상태를 맞춘다.
+        for (int i = 0; i < startStepIndex && i < targetScenario.steps.Count; i++)
+        {
+            ScenarioStep past = targetScenario.steps[i];
+            if (past == null) continue;
+
+            if (past.stepType == ScenarioStepType.StandingShow) ShowStanding(past);
+            else if (past.stepType == ScenarioStepType.StandingHide) HideStanding();
+        }
+
+        for (currentStepIndex = startStepIndex;
              currentStepIndex < targetScenario.steps.Count;
              currentStepIndex++)
         {
@@ -444,6 +442,12 @@ public class ScenarioRunner : MonoBehaviour
         }
 
         sceneLoadRequested = true;
+
+        // 이동할 씬에 맞게 진행 단계도 같이 바꿔준다 (논파/심판/미니게임 씬이 현재 단계를 읽음)
+        if (GameProgressManager.Instance != null)
+        {
+            GameProgressManager.Instance.SetStepByScene(targetScene);
+        }
 
         SceneManager.LoadScene(targetScene);
     }

@@ -40,6 +40,12 @@ public class NoteInventoryUI : MonoBehaviour
         inventoryPanel.anchoredPosition = closedPosition;
         if (detailPanel != null) detailPanel.SetActive(false);
 
+        // 씬이 바뀌어도 InventoryManager 가 현재 씬의 UI를 가리키도록 다시 연결
+        if (InventoryManager.Instance != null)
+        {
+            InventoryManager.Instance.SetNoteInventoryUI(this);
+        }
+
         // 연상하기 버튼 초기화 및 클릭 이벤트 연결
         if (combineButton != null)
         {

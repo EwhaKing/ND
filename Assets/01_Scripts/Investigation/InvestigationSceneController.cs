@@ -94,17 +94,13 @@ public class InvestigationSceneController : MonoBehaviour
             rect.localScale = Vector3.one;
         }
 
-        // InvestigationManager에게
-        // 새 조사 오브젝트 목록 등록
-        investigationManager.InitializeStage(
-            currentStageObject.transform
-        );
         // investigationManager 참조가 null이거나 Missing인 경우 싱글톤 Instance로 자동 할당
         if (investigationManager == null)
         {
             investigationManager = InvestigationManager.Instance;
         }
 
+        // InvestigationManager에게 새 조사 오브젝트 목록 등록 (한 번만 호출)
         if (investigationManager != null)
         {
             investigationManager.InitializeStage(currentStageObject.transform);

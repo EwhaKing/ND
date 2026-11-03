@@ -1300,7 +1300,6 @@ GameObject:
   - component: {fileID: 1068760404}
   - component: {fileID: 1068760403}
   - component: {fileID: 1068760406}
-  - component: {fileID: 1068760405}
   m_Layer: 0
   m_Name: RefutationManager
   m_TagString: Untagged
@@ -1368,18 +1367,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 586595f54195a3d4bb1f527dbd38c359, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RefutationDatabase
---- !u!114 &1068760405
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1068760399}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 61119abe673b5dc47bf26c28cd57f711, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RefutationDialogueDatabase
 --- !u!114 &1068760406
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2123,6 +2110,7 @@ MonoBehaviour:
   judgeSceneName: JudgeScene
   miniGameSceneName: MiniGameScene
   scenarioList: []
+  clueDatabase: []
 --- !u!4 &1575679645
 Transform:
   m_ObjectHideFlags: 0

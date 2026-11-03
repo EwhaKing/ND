@@ -7,6 +7,19 @@ public class ClueInteract : MonoBehaviour
     private bool isFirstClickDone = false;
     private bool isUnlocked = false;
 
+    private void Start()
+    {
+        // 세이브를 불러왔을 때 이미 획득한 단서라면 "조사한 상태"로 시작한다.
+        // (다시 눌러도 재조사 대사만 나오고, 중복 획득되지 않음)
+        if (clueData != null &&
+            GameProgressManager.Instance != null &&
+            GameProgressManager.Instance.HasClue(clueData.clueID))
+        {
+            isFirstClickDone = true;
+            isUnlocked = true;
+        }
+    }
+
     public void OnClickAction()
     {
         if (clueData == null)
