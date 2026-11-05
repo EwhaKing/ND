@@ -11,6 +11,9 @@ using System;
 /// - 포인트 앤 클릭 조사 파트에서 사용하는 간단한 대화창을 관리
 /// - 조사 오브젝트 클릭 시 출력할 대사(DialogueEntry)들을 Queue에 저장하고 순서대로 표시
 /// - 대사마다 캐릭터 이름, 스탠딩 이미지, 대사 텍스트를 함께 갱신
+/// - 스탠딩은 한 화면에 최대 2명까지 표시하며, 인원수에 따라 위치를 자동 배치
+///     · 1명: 중앙 / 2명: 먼저 등장한 캐릭터가 왼쪽, 나중에 등장한 캐릭터가 오른쪽
+/// - 말하고 있지 않은 캐릭터의 스탠딩은 회색으로 흐리게 표시
 /// - 대화가 끝나면 대화 패널을 비활성화
 /// - 단서 획득 후 필요한 경우 인벤토리 UI와 조사 진행 UI를 갱신
 /// - 대화 종료 시 외부에서 등록한 콜백을 호출 가능
@@ -34,12 +37,33 @@ public class PointClickDialogueManager : MonoBehaviour
 {
     public static PointClickDialogueManager Instance;
 
+    // 한 화면에 동시에 표시할 수 있는 최대 캐릭터 수
+    private const int MaxStageCharacters = 2;
+
     [Header("UI 컴포넌트 연결")]
     public GameObject dialoguePanel;
     public TextMeshProUGUI dialogueText;
     public TextMeshProUGUI nameText;        // 캐릭터 이름 텍스트
     public GameObject nameBox;              // 이름 텍스트 배경 오브젝트 (없으면 nameText 오브젝트 자체를 숨김)
-    public Image standingImage;             // 스탠딩 이미지
+
+    [Header("스탠딩 이미지 (좌/중앙/우)")]
+    public Image standingLeft;              // 2명일 때 먼저 등장한 캐릭터
+    public Image standingCenter;            // 1명일 때 사용
+    public Image standingRight;             // 2명일 때 나중에 등장한 캐릭터
+
+    [Header("스탠딩 강조 설정")]
+    public Color speakingColor = Color.white;                       // 말하는 캐릭터 색
+    public Color dimmedColor = new Color(0.5f, 0.5f, 0.5f, 1f);     // 말하지 않는 캐릭터 색
+
+    // 현재 무대에 서 있는 캐릭터 정보
+    private class StageCharacter
+    {
+        public string name;
+        public Sprite sprite;
+    }
+
+    // 등장 순서대로 저장 (인덱스 0이 가장 먼저 등장한 캐릭터)
+    private List<StageCharacter> stage = new List<StageCharacter>();
 
     private Queue<DialogueEntry> sentences = new Queue<DialogueEntry>(); // 대사 저장용 큐
     private bool pendingInventoryRefresh = false; // 인벤토리 UI 갱신 여부 확인용 플래그
@@ -49,6 +73,7 @@ public class PointClickDialogueManager : MonoBehaviour
     {
         if (Instance == null) Instance = this;
         if (dialoguePanel != null) dialoguePanel.SetActive(false);
+        HideAllStandings();
     }
 
     // 여러 줄 대사 출력용 함수 (이름/스탠딩 포함)
@@ -57,6 +82,7 @@ public class PointClickDialogueManager : MonoBehaviour
         if (dialoguePanel == null || dialogueText == null) return;
 
         sentences.Clear();
+        ClearStage(); // 새 대화가 시작되면 이전 대화의 스탠딩은 초기화
 
         if (entriesToShow != null)
         {
@@ -116,7 +142,9 @@ public class PointClickDialogueManager : MonoBehaviour
 
         dialogueText.text = current.text;
         ApplyName(current.characterName);
-        ApplyStanding(current.standingSprite);
+
+        UpdateStage(current);                       // 1. 무대 갱신 (등장/표정 교체)
+        ApplyStandingLayout(current.characterName); // 2. 배치 + 3. 화자 강조
 
         dialoguePanel.SetActive(true);
     }
@@ -141,20 +169,78 @@ public class PointClickDialogueManager : MonoBehaviour
         }
     }
 
-    // 스탠딩 이미지 갱신 (스프라이트가 없으면 이미지를 숨김)
-    private void ApplyStanding(Sprite sprite)
+    // 1단계: 현재 대사 정보로 무대(캐릭터 목록)를 갱신
+    // - 이름과 스프라이트가 모두 있어야 등장/교체로 처리
+    // - 스프라이트가 비어 있으면 기존 상태 유지
+    private void UpdateStage(DialogueEntry entry)
     {
-        if (standingImage == null) return;
+        if (string.IsNullOrEmpty(entry.characterName) || entry.standingSprite == null)
+        {
+            return;
+        }
 
-        if (sprite != null)
+        StageCharacter existing = stage.Find(c => c.name == entry.characterName);
+
+        if (existing != null)
         {
-            standingImage.sprite = sprite;
-            standingImage.gameObject.SetActive(true);
+            // 이미 무대에 있는 캐릭터: 스프라이트만 교체 (표정 변화 등)
+            existing.sprite = entry.standingSprite;
+            return;
         }
-        else
+
+        // 새 캐릭터 등장: 최대 인원을 넘으면 가장 오래된 캐릭터를 퇴장시킨다
+        if (stage.Count >= MaxStageCharacters)
         {
-            standingImage.gameObject.SetActive(false);
+            stage.RemoveAt(0);
         }
+
+        stage.Add(new StageCharacter
+        {
+            name = entry.characterName,
+            sprite = entry.standingSprite
+        });
+    }
+
+    // 2, 3단계: 인원수에 따라 좌/중앙/우 배치 후 화자만 밝게 표시
+    private void ApplyStandingLayout(string speakerName)
+    {
+        HideAllStandings();
+
+        if (stage.Count == 1)
+        {
+            SetSlot(standingCenter, stage[0], speakerName);
+        }
+        else if (stage.Count >= 2)
+        {
+            SetSlot(standingLeft, stage[0], speakerName);
+            SetSlot(standingRight, stage[1], speakerName);
+        }
+    }
+
+    // 슬롯 하나에 캐릭터 스프라이트와 색을 적용
+    // 화자 이름이 비어 있거나 무대에 없는 사람이면 모든 슬롯이 흐려진다
+    private void SetSlot(Image slot, StageCharacter character, string speakerName)
+    {
+        if (slot == null) return;
+
+        bool isSpeaking = !string.IsNullOrEmpty(speakerName) && character.name == speakerName;
+
+        slot.sprite = character.sprite;
+        slot.color = isSpeaking ? speakingColor : dimmedColor;
+        slot.gameObject.SetActive(true);
+    }
+
+    private void HideAllStandings()
+    {
+        if (standingLeft != null) standingLeft.gameObject.SetActive(false);
+        if (standingCenter != null) standingCenter.gameObject.SetActive(false);
+        if (standingRight != null) standingRight.gameObject.SetActive(false);
+    }
+
+    private void ClearStage()
+    {
+        stage.Clear();
+        HideAllStandings();
     }
 
     // 다음 대사가 있는지 확인
@@ -175,7 +261,7 @@ public class PointClickDialogueManager : MonoBehaviour
         if (dialoguePanel != null) dialoguePanel.SetActive(false);
 
         // 다음 대화를 위해 스탠딩/이름 표시 초기화
-        if (standingImage != null) standingImage.gameObject.SetActive(false);
+        ClearStage();
         ApplyName(string.Empty);
 
         if (pendingInventoryRefresh)
