@@ -89,17 +89,18 @@ public class ClueDetailPopup : MonoBehaviour
         // 설명
         if (clueDescText != null)
         {
+            string firstClickFallback =
+                GetFirstClickFallbackText(clueData);
+
             if (!string.IsNullOrEmpty(
                     clueData.inventoryDescription))
             {
                 clueDescText.text =
                     clueData.inventoryDescription;
             }
-            else if (!string.IsNullOrEmpty(
-                         clueData.firstClickText))
+            else if (!string.IsNullOrEmpty(firstClickFallback))
             {
-                clueDescText.text =
-                    clueData.firstClickText;
+                clueDescText.text = firstClickFallback;
             }
             else if (!string.IsNullOrEmpty(
                          clueData.secondClickText))
@@ -129,6 +130,25 @@ public class ClueDetailPopup : MonoBehaviour
 
         CancelInvoke(nameof(EnableClose));
         Invoke(nameof(EnableClose), 0.1f);
+    }
+
+    // firstClickText(DialogueEntry[])에서 설명 대체용으로 쓸 첫 번째 비어있지 않은 대사를 반환
+    private string GetFirstClickFallbackText(ClueData clueData)
+    {
+        if (clueData.firstClickText == null)
+        {
+            return null;
+        }
+
+        foreach (DialogueEntry entry in clueData.firstClickText)
+        {
+            if (!string.IsNullOrEmpty(entry.text))
+            {
+                return entry.text;
+            }
+        }
+
+        return null;
     }
 
     private void EnableClose()
