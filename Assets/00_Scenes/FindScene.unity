@@ -873,6 +873,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DialogueManager
   dialoguePanel: {fileID: 842974232}
   dialogueText: {fileID: 1837078524}
+  nameText: {fileID: 0}
+  nameBox: {fileID: 0}
+  standingLeft: {fileID: 0}
+  standingCenter: {fileID: 0}
+  standingRight: {fileID: 0}
+  speakingColor: {r: 1, g: 1, b: 1, a: 1}
+  dimmedColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
 --- !u!114 &646170473
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1366,11 +1373,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 42101542483774215, guid: 232f6d22caa191c4fb94c17a52a69c5d, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 290.2205
+      value: 92.4816
       objectReference: {fileID: 0}
     - target: {fileID: 42101542483774215, guid: 232f6d22caa191c4fb94c17a52a69c5d, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 162.5179
+      value: 164.268
       objectReference: {fileID: 0}
     - target: {fileID: 42101542483774215, guid: 232f6d22caa191c4fb94c17a52a69c5d, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1402,11 +1409,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 42101542483774215, guid: 232f6d22caa191c4fb94c17a52a69c5d, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -834.9901
+      value: -867
       objectReference: {fileID: 0}
     - target: {fileID: 42101542483774215, guid: 232f6d22caa191c4fb94c17a52a69c5d, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -135.20447
+      value: -283
       objectReference: {fileID: 0}
     - target: {fileID: 42101542483774215, guid: 232f6d22caa191c4fb94c17a52a69c5d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -1427,10 +1434,10 @@ PrefabInstance:
     - target: {fileID: 3807330935861533502, guid: 232f6d22caa191c4fb94c17a52a69c5d, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 6768139323804525417, guid: 2a6d037236a85c64baf79bb929a7394d, type: 3}
     - target: {fileID: 3807330935861533502, guid: 232f6d22caa191c4fb94c17a52a69c5d, type: 3}
       propertyPath: m_Color.a
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6228335933310101328, guid: 232f6d22caa191c4fb94c17a52a69c5d, type: 3}
       propertyPath: clueData
@@ -1442,7 +1449,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7104339760297768746, guid: 232f6d22caa191c4fb94c17a52a69c5d, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class ClueInteract : MonoBehaviour
@@ -24,6 +25,13 @@ public class ClueInteract : MonoBehaviour
     {
         if (clueData == null)
         {
+            // 같은 단서를 가진 다른 오브젝트에서 이미 획득했다면 이 오브젝트도 조사한 상태로 처리
+            if (InventoryManager.Instance != null &&
+                InventoryManager.Instance.HasItem(clueData.clueID))
+            {
+                isFirstClickDone = true;
+                isUnlocked = true;
+            }
             return;
         }
 
@@ -48,14 +56,21 @@ public class ClueInteract : MonoBehaviour
                 ShowPopupThenDialogue(
                     () =>
                     {
-                        string[] combinedTexts =
+                        // 잠금 해제 대사(문자열, 지문) + 첫 조사 대사(구조체 배열)를 하나의 흐름으로 합친다
+                        List<DialogueEntry> combined = new List<DialogueEntry>();
+
+                        if (!string.IsNullOrEmpty(clueData.openText))
                         {
-                            clueData.openText,
-                            clueData.firstClickText
-                        };
+                            combined.Add(DialogueEntry.Narration(clueData.openText));
+                        }
+
+                        if (clueData.firstClickText != null)
+                        {
+                            combined.AddRange(clueData.firstClickText);
+                        }
 
                         PointClickDialogueManager.Instance.ShowTexts(
-                            combinedTexts,
+                            combined.ToArray(),
                             true
                         );
                     }
@@ -87,7 +102,7 @@ public class ClueInteract : MonoBehaviour
             ShowPopupThenDialogue(
                 () =>
                 {
-                    PointClickDialogueManager.Instance.ShowText(
+                    PointClickDialogueManager.Instance.ShowTexts(
                         clueData.firstClickText,
                         true
                     );
