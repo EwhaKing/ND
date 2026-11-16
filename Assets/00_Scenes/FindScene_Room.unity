@@ -224,7 +224,7 @@ PrefabInstance:
       objectReference: {fileID: 8410609359775610216, guid: 7d7b75d3caac62b44987d6411b23d291, type: 3}
     - target: {fileID: 5719635732354413155, guid: 5f5f395d38b640d4fb8128cacfbc385f, type: 3}
       propertyPath: m_Name
-      value: Cloth (1)
+      value: TrashCan
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1243,6 +1243,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DialogueManager
   dialoguePanel: {fileID: 842974232}
   dialogueText: {fileID: 1837078524}
+  nameText: {fileID: 0}
+  nameBox: {fileID: 0}
+  standingLeft: {fileID: 0}
+  standingCenter: {fileID: 0}
+  standingRight: {fileID: 0}
+  speakingColor: {r: 1, g: 1, b: 1, a: 1}
+  dimmedColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
 --- !u!114 &646170473
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1679,7 +1686,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 42101542483774215, guid: 232f6d22caa191c4fb94c17a52a69c5d, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 38.9788
+      value: 32.3705
       objectReference: {fileID: 0}
     - target: {fileID: 42101542483774215, guid: 232f6d22caa191c4fb94c17a52a69c5d, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1715,7 +1722,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 42101542483774215, guid: 232f6d22caa191c4fb94c17a52a69c5d, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 299.67383
+      value: 302.97803
       objectReference: {fileID: 0}
     - target: {fileID: 42101542483774215, guid: 232f6d22caa191c4fb94c17a52a69c5d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
