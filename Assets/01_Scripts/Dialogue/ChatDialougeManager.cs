@@ -338,4 +338,23 @@ public class ChatDialogueManager : MonoBehaviour
             dialogueRoot.SetActive(false);
         }
     }
+
+    /// <summary>
+    /// 현재 출력 중인 대사의 타이핑 연출을 즉시 완료합니다. (스킵용)
+    /// </summary>
+    public void ForceCompleteTyping()
+    {
+        if (isTyping)
+        {
+            CompleteTypingImmediately();
+        }
+    }
+
+    /// <summary>
+    /// 현재 대사를 즉시 종료하고 완료 콜백을 호출합니다. (스킵용)
+    /// </summary>
+    public void ForceFinishDialogue()
+    {
+        FinishDialogue();
+    }
 }

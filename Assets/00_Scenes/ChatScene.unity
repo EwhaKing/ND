@@ -3163,6 +3163,7 @@ MonoBehaviour:
   cgController: {fileID: 469810045}
   fadeController: {fileID: 2056223596}
   animController: {fileID: 1941046941}
+  skipInterval: 0.07
 --- !u!114 &1158869492 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 4108142058561881944, guid: 75d069f124aba2348a57eae4755ce60d, type: 3}
@@ -4400,7 +4401,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameProgressManager
   forceSkipForTesting: 1
   playCount: 1
-  currentStep: 2
+  currentStep: 1
   lobbySceneName: LobbyScene
   chatSceneName: ChatScene
   findSceneName: FindScene

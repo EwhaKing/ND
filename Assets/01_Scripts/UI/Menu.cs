@@ -92,19 +92,26 @@ public class Menu : MonoBehaviour
     public void OnSkipButton()
     {
         if (GameProgressManager.Instance == null || !GameProgressManager.Instance.CanSkip) return;
-        skipConfirmPanel.SetActive(true);
+
+        if (scenarioRunner != null)
+        {
+            if (scenarioRunner.IsSkipping)
+                scenarioRunner.StopSkip();
+            else
+                scenarioRunner.StartFastSkip();
+        }
     }
 
-    public void ConfirmSkip()
-    {
-        skipConfirmPanel.SetActive(false);
-        if (scenarioRunner != null) scenarioRunner.StartSkipToNextChoice();
-    }
+    //public void ConfirmSkip()
+    //{
+    //    skipConfirmPanel.SetActive(false);
+    //    if (scenarioRunner != null) scenarioRunner.StartSkipToNextChoice();
+    //}
 
-    public void CancelSkip()
-    {
-        skipConfirmPanel.SetActive(false);
-    }
+    //public void CancelSkip()
+    //{
+    //    skipConfirmPanel.SetActive(false);
+    //} 스킵 기능 수정으로 필요없음
 
     private void UpdateSkipButton()
     {
