@@ -49,6 +49,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7f4a7dbd58e92b04ab38dce03d520624, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ClueDetailPopup
+  dialoguePanel: {fileID: 0}
   popupPanel: {fileID: 6832056784256911863}
   clueImage: {fileID: 4246580961202531615}
   clueNameText: {fileID: 5087780546937149327}
@@ -325,7 +326,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 0.9389575, b: 0.79811317, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
