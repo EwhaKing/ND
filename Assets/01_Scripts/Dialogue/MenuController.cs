@@ -56,43 +56,24 @@ public class MenuController : MonoBehaviour
     // Skip 버튼 클릭
     public void OnSkipButton()
     {
-        if (GameProgressManager.Instance == null)
+        if (GameProgressManager.Instance == null || !GameProgressManager.Instance.CanSkip)
         {
             return;
         }
-
-        if (!GameProgressManager.Instance.CanSkip)
-        {
-            return;
-        }
-
-        // 바로 스킵하지 않고 확인창 표시
-        skipConfirmPanel.SetActive(true);
-    }
-
-    // Yes
-    public void ConfirmSkip()
-    {
-        skipConfirmPanel.SetActive(false);
 
         if (scenarioRunner == null)
         {
-            Debug.LogError(
-                "ScenarioRunner가 연결되지 않았습니다."
-            );
-
+            Debug.LogError("ScenarioRunner가 연결되지 않았습니다.");
             return;
         }
 
-        scenarioRunner.StartSkipToNextChoice();
+        if (scenarioRunner.IsSkipping)
+            scenarioRunner.StopSkip();
+        else
+            scenarioRunner.StartFastSkip();
     }
 
-    // No
-    public void CancelSkip()
-    {
-        skipConfirmPanel.SetActive(false);
-    }
-
+    
     private void UpdateSkipButton()
     {
         if (skipButton == null)

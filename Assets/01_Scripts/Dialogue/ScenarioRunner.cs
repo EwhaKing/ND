@@ -60,6 +60,12 @@ public class ScenarioRunner : MonoBehaviour
     [Header("Animation")]
     [SerializeField] private AnimationController animController;
 
+    [Header("Skip Settings")]
+    [SerializeField] private float skipInterval = 0.12f;
+    public bool IsSkipping => isSkipping;
+    private bool ignoreClickThisFrame;
+    private int lastStopFrame = -1;
+
     private int currentStepIndex;
     private bool isRunning;
     private bool isWaitingForDialogue;
@@ -303,12 +309,6 @@ public class ScenarioRunner : MonoBehaviour
             standingController.SetColor(entry.standName);
         }
 
-        if (isSkipping)
-        {
-            yield return null;
-            yield break;
-        }
-
         isWaitingForDialogue = true;
 
         dialogueManager.ShowSingleLine(
@@ -317,9 +317,34 @@ public class ScenarioRunner : MonoBehaviour
             OnDialogueFinished
         );
 
-        yield return new WaitUntil(
-            () => !isWaitingForDialogue
-        );
+
+        if (isSkipping)
+        {
+            dialogueManager.ForceCompleteTyping();
+            // 스킵 중에는 지정된 간격(skipInterval)만큼 대기 후 다음 스텝으로 진행
+            float elapsed = 0f;
+            while (elapsed < skipInterval && isSkipping && isWaitingForDialogue)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                yield return null;
+            }
+
+            // 대기 도중 화면 클릭으로 스킵이 풀렸다면, 현재 대사는 클릭할 때까지 유지
+            if (!isSkipping && isWaitingForDialogue)
+            {
+                yield return new WaitUntil(() => !isWaitingForDialogue);
+            }
+            else
+            {
+                isWaitingForDialogue = false;
+            }
+        }
+        else
+        {
+            yield return new WaitUntil(
+                () => !isWaitingForDialogue
+            );
+        }
     }
 
     private void OnDialogueFinished()
@@ -700,23 +725,59 @@ public class ScenarioRunner : MonoBehaviour
     }
 
     /// <summary>
-    /// 다음 선택지까지 대사를 스킵합니다.
+    /// 대사를 빠르게 넘기는 스킵을 시작합니다.
     /// </summary>
-    public void StartSkipToNextChoice()
+    public void StartFastSkip()
     {
-        isSkipping = true;
+        // 방금 클릭으로 스킵을 중지한 프레임에는 다시 시작하지 않음
+        if (Time.frameCount == lastStopFrame) return;
+        if (isWaitingForChoice || isSkipping) return;
 
+        isSkipping = true;
+        ignoreClickThisFrame = true;
+
+        // 1. 현재 대사가 화면에 떠서 클릭을 기다리는 중이라면 즉시 종료하고 다음 대사로 진행
         if (isWaitingForDialogue)
         {
+            if (dialogueManager != null)
+            {
+                dialogueManager.ForceFinishDialogue();
+            }
             isWaitingForDialogue = false;
         }
 
+        // 2. CG 대기 중이었다면 해제
         if (isWaitingForCG)
         {
             isWaitingForCG = false;
         }
 
-        Debug.Log("다음 선택지까지 스킵 시작");
+        Debug.Log("스킵시작");
+    }
+
+    /// <summary>
+    /// 진행 중인 스킵을 중지합니다.
+    /// </summary>
+    public void StopSkip()
+    {
+        if (!isSkipping) return;
+
+        isSkipping = false;
+        Debug.Log("스킵 중지");
+    }
+    private void Update()
+    {
+        if (ignoreClickThisFrame)
+        {
+            ignoreClickThisFrame = false;
+            return;
+        }
+
+        // 스킵 중 화면 클릭(터치) 시 정지
+        if (isSkipping && Input.GetMouseButtonDown(0))
+        {
+            StopSkip();
+        }
     }
 
     /// <summary>
