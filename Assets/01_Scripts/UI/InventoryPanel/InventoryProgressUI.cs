@@ -2,8 +2,8 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-// 인벤토리 패널에 "현재 스테이지 이름"과 "조사율 막대"를 표시합니다.
-// MainInventoryPanel 아래 빈 오브젝트(예: ProgressUI)에 붙이세요.
+// 인벤토리 패널에 현재 스테이지 이름과 조사율 막대 표시
+// MainInventoryPanel 아래 ProgressUI에 붙임
 public class InventoryProgressUI : MonoBehaviour
 {
     public static InventoryProgressUI Instance { get; private set; }
@@ -13,9 +13,9 @@ public class InventoryProgressUI : MonoBehaviour
     [SerializeField] private bool autoFillStageFromProgress = true; // GameProgressManager 의 챕터 문구를 자동 표시
 
     [Header("조사율 막대")]
-    [SerializeField] private Image fillImage;       // 초록색 막대 (Image Type = Filled, Horizontal, Origin Left)
-    [SerializeField] private TMP_Text percentText;  // 선택: "60%" 숫자 (필요 없으면 비워 두기)
-    [SerializeField] private float fillSpeed = 1.5f; // 차오르는 속도 (1 = 0%→100%가 1초)
+    [SerializeField] private Image fillImage;       // 초록색 막대
+    [SerializeField] private TMP_Text percentText;  //
+    [SerializeField] private float fillSpeed = 1.5f; // 차오르는 속도
 
     private float targetFill;
 
@@ -40,7 +40,7 @@ public class InventoryProgressUI : MonoBehaviour
     {
         if (fillImage == null) return;
 
-        // 초록색이 점차 차오르게 (부드럽게 따라가기)
+        // 초록색이 부드럽게 차오름
         fillImage.fillAmount = Mathf.MoveTowards(
             fillImage.fillAmount, targetFill, fillSpeed * Time.unscaledDeltaTime);
     }
@@ -60,7 +60,7 @@ public class InventoryProgressUI : MonoBehaviour
         if (stageText != null) stageText.text = label;
     }
 
-    // 조사율 0~1 (예: 60% → 0.6)
+    // 조사율 0~1 
     public void SetProgress(float progress01)
     {
         targetFill = Mathf.Clamp01(progress01);

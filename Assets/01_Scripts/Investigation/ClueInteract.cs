@@ -57,7 +57,7 @@ public class ClueInteract : MonoBehaviour
                 ShowPopupThenDialogue(
                     () =>
                     {
-                        // 잠금 해제 대사(문자열, 지문) + 첫 조사 대사(구조체 배열)를 하나의 흐름으로 합친다
+                        // 잠금 해제 대사(문자열, 지문) + 첫 조사 대사를 하나의 흐름으로 합친다
                         List<DialogueEntry> combined = new List<DialogueEntry>();
 
                         if (!string.IsNullOrEmpty(clueData.openText))

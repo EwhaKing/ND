@@ -23,8 +23,10 @@ public class ClueDetailPopup : MonoBehaviour
     [SerializeField] private PopupSequence popupSequence;
 
     [Header("안전장치")]
-    [Tooltip("연출에 문제가 생겨도 이 시간(초)이 지나면 닫을 수 있게 풀립니다.")]
+    [Tooltip("연출에 문제가 생겨도 시간(초)이 지나면 닫을 수 있음")]
     [SerializeField] private float safetyUnlockTime = 2f;
+    [Tooltip("연출 후 클릭 막혀 있는 시간(초)")]
+    [SerializeField] private float readDelay = 0.5f;
 
     private bool canClose = false;
 
@@ -68,7 +70,7 @@ public class ClueDetailPopup : MonoBehaviour
 
         if (popupSequence == null)
         {
-            Debug.LogWarning("ClueDetailPopup: Popup Sequence 가 연결되어 있지 않습니다. " +
+            Debug.LogWarning("ClueDetailPopup: Popup Sequence 가 연결되어 있지 않음. " +
                              "연출 없이 바로 열리고, 클릭으로 일찍 닫힐 수 있습니다.", this);
         }
     }
@@ -79,8 +81,6 @@ public class ClueDetailPopup : MonoBehaviour
         // 닫힌 뒤 실행할 함수(조사율 갱신, 대화)가 사라지지 않게 처리
         if (currentClue != null && !IsOpen)
         {
-            Debug.LogWarning("ClueDetailPopup: 팝업이 외부에서 꺼졌습니다. 닫힘 처리를 대신 실행합니다.\n" +
-                             "이 로그가 보이면 popupPanel을 끄는 다른 스크립트를 찾아야 합니다.", this);
             CloseNow();
             return;
         }
@@ -208,6 +208,7 @@ public class ClueDetailPopup : MonoBehaviour
         // 연출이 끝나기 전에는 닫히지 않게 막기
         canClose = false;
         CancelInvoke(nameof(EnableClose));
+        CancelInvoke(nameof(AllowClose));
 
         if (popupSequence != null)
         {
@@ -243,10 +244,15 @@ public class ClueDetailPopup : MonoBehaviour
         return null;
     }
 
+    private void AllowClose()
+    {
+        canClose = true;
+    }
     private void EnableClose()
     {
         CancelInvoke(nameof(EnableClose));
-        canClose = true;
+        CancelInvoke(nameof(AllowClose));
+        Invoke(nameof(AllowClose), readDelay);
     }
 
     // 연출이 끝난 뒤에만 닫힘 (연출 중에는 어디서 불러도 무시)
@@ -278,6 +284,7 @@ public class ClueDetailPopup : MonoBehaviour
 
         canClose = false;
         CancelInvoke(nameof(EnableClose));
+        CancelInvoke(nameof(AllowClose));
         closedFrame = Time.frameCount;
 
         // 팝업 닫기
