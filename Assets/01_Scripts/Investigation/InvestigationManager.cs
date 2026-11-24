@@ -85,6 +85,9 @@ public class InvestigationManager : MonoBehaviour
     // UI 업데이트 메서드
     public void UpdateUI()
     {
+        if (InventoryProgressUI.Instance != null)
+            InventoryProgressUI.Instance.SetProgress(progressRate / 100f);
+
         if (progressRateText != null) 
         {
             progressRateText.text = $"조사율: {progressRate}%";

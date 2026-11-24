@@ -15,7 +15,7 @@ public class ItemSlotUI : MonoBehaviour, IPointerClickHandler
 
     private void Awake()
     {
-        // 스크립트에서 Button 컴포넌트를 자동으로 가져옵니다.
+        // 스크립트에서 Button 컴포넌트를 가져옴
         if (slotButton == null) slotButton = GetComponent<Button>();
     }
 
@@ -36,7 +36,7 @@ public class ItemSlotUI : MonoBehaviour, IPointerClickHandler
         {
             if (iconImage != null) iconImage.gameObject.SetActive(false);
 
-            // 빈 슬롯이면 버튼 상호작용 비활성화 (누름 효과/회색 변형 방지)
+            // 빈 슬롯이면 버튼 상호작용 비활성화
             if (slotButton != null) slotButton.interactable = false;
         }
 
@@ -53,7 +53,7 @@ public class ItemSlotUI : MonoBehaviour, IPointerClickHandler
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        // 아이템 데이터가 없는 빈 슬롯은 클릭 로직을 즉시 무시합니다.
+        // 아이템 데이터가 없는 빈 슬롯은 클릭 로직을 즉시 무시
         if (currentClueData == null) return;
 
         float timeSinceLastClick = Time.time - lastClickTime;
