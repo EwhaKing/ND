@@ -23,6 +23,7 @@ public class ClueInteract : MonoBehaviour
 
     public void OnClickAction()
     {
+        if (ClueDetailPopup.Instance != null && ClueDetailPopup.Instance.IsBusy) return;
         if (clueData == null)
         {
             // 같은 단서를 가진 다른 오브젝트에서 이미 획득했다면 이 오브젝트도 조사한 상태로 처리
@@ -56,7 +57,7 @@ public class ClueInteract : MonoBehaviour
                 ShowPopupThenDialogue(
                     () =>
                     {
-                        // 잠금 해제 대사(문자열, 지문) + 첫 조사 대사(구조체 배열)를 하나의 흐름으로 합친다
+                        // 잠금 해제 대사(문자열, 지문) + 첫 조사 대사를 하나의 흐름으로 합친다
                         List<DialogueEntry> combined = new List<DialogueEntry>();
 
                         if (!string.IsNullOrEmpty(clueData.openText))
@@ -118,22 +119,27 @@ public class ClueInteract : MonoBehaviour
         }
     }
 
-    private void ShowPopupThenDialogue(
-        System.Action dialogueAction)
+    private void ShowPopupThenDialogue(System.Action dialogueAction)
     {
-        // 팝업이 있다면 팝업을 먼저 표시
+        // 팝업이 닫히면: 조사율 갱신(확정) → 대화 시작
+        System.Action afterPopup = () =>
+        {
+            if (InvestigationManager.Instance != null)
+            {
+                InvestigationManager.Instance.UpdateUI();
+            }
+
+            dialogueAction?.Invoke();
+        };
+
         if (ClueDetailPopup.Instance != null)
         {
-            ClueDetailPopup.Instance.ShowPopup(
-                clueData,
-                dialogueAction
-            );
+            ClueDetailPopup.Instance.ShowPopup(clueData, afterPopup);
         }
         else
         {
-            // 혹시 팝업 Manager가 없다면
-            // 게임 진행이 막히지 않도록 바로 대화 실행
-            dialogueAction?.Invoke();
+            // 팝업 Manager가 없으면 바로 실행
+            afterPopup();
         }
     }
 }

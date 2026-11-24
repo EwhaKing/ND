@@ -96,7 +96,7 @@ public class PointClickDialogueManager : MonoBehaviour
             }
         }
 
-        pendingInventoryRefresh = shouldRefreshInventory;
+        pendingInventoryRefresh = pendingInventoryRefresh || shouldRefreshInventory;
 
         DisplayNextSentence();
     }

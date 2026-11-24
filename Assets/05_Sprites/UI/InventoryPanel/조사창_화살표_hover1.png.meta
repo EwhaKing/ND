@@ -1,0 +1,299 @@
+fileFormatVersion: 2
+guid: 60f9522d3f5025d4a9b6430390c4cd04
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -9004061222245836482
+    second: "\uC870\uC0AC\uCC3D_\uD654\uC0B4\uD45C_hover1_0"
+  - first:
+      213: 979105268168080449
+    second: "\uC870\uC0AC\uCC3D_\uD654\uC0B4\uD45C_hover1_1"
+  - first:
+      213: 7058529844181369596
+    second: "\uC870\uC0AC\uCC3D_\uD654\uC0B4\uD45C_hover1_2"
+  - first:
+      213: -8017033609059604102
+    second: "\uC870\uC0AC\uCC3D_\uD654\uC0B4\uD45C_hover1_3"
+  - first:
+      213: 4276630672718375966
+    second: "\uC870\uC0AC\uCC3D_\uD654\uC0B4\uD45C_hover1_4"
+  - first:
+      213: 2588512340455740150
+    second: "\uC870\uC0AC\uCC3D_\uD654\uC0B4\uD45C_hover1_5"
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 4096
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: "\uC870\uC0AC\uCC3D_\uD654\uC0B4\uD45C_hover1_0"
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 45
+        width: 102
+        height: 95
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e39da2026062b0380800000000000000
+      internalID: -9004061222245836482
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "\uC870\uC0AC\uCC3D_\uD654\uC0B4\uD45C_hover1_1"
+      rect:
+        serializedVersion: 2
+        x: 78
+        y: 41
+        width: 99
+        height: 149
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 14c3fdacd0b769d00800000000000000
+      internalID: 979105268168080449
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "\uC870\uC0AC\uCC3D_\uD654\uC0B4\uD45C_hover1_2"
+      rect:
+        serializedVersion: 2
+        x: 190
+        y: 48
+        width: 80
+        height: 158
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cf28ceede7fe4f160800000000000000
+      internalID: 7058529844181369596
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "\uC870\uC0AC\uCC3D_\uD654\uC0B4\uD45C_hover1_3"
+      rect:
+        serializedVersion: 2
+        x: 215
+        y: 17
+        width: 132
+        height: 98
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a7962ab9866cdb090800000000000000
+      internalID: -8017033609059604102
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "\uC870\uC0AC\uCC3D_\uD654\uC0B4\uD45C_hover1_4"
+      rect:
+        serializedVersion: 2
+        x: 256
+        y: 102
+        width: 116
+        height: 79
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e1c2be230f4a95b30800000000000000
+      internalID: 4276630672718375966
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "\uC870\uC0AC\uCC3D_\uD654\uC0B4\uD45C_hover1_5"
+      rect:
+        serializedVersion: 2
+        x: 36
+        y: 0
+        width: 145
+        height: 74
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6f25495524e3ce320800000000000000
+      internalID: 2588512340455740150
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      "\uC870\uC0AC\uCC3D_\uD654\uC0B4\uD45C_hover1_0": -9004061222245836482
+      "\uC870\uC0AC\uCC3D_\uD654\uC0B4\uD45C_hover1_1": 979105268168080449
+      "\uC870\uC0AC\uCC3D_\uD654\uC0B4\uD45C_hover1_2": 7058529844181369596
+      "\uC870\uC0AC\uCC3D_\uD654\uC0B4\uD45C_hover1_3": -8017033609059604102
+      "\uC870\uC0AC\uCC3D_\uD654\uC0B4\uD45C_hover1_4": 4276630672718375966
+      "\uC870\uC0AC\uCC3D_\uD654\uC0B4\uD45C_hover1_5": 2588512340455740150
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
