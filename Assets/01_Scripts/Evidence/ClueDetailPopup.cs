@@ -85,13 +85,6 @@ public class ClueDetailPopup : MonoBehaviour
             return;
         }
 
-        if (IsOpen && canClose)
-        {
-            if (Input.GetMouseButtonDown(0))
-            {
-                ClosePopup();
-            }
-        }
     }
 
     public void ShowPopup(

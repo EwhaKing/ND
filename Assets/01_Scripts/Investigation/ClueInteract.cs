@@ -24,7 +24,7 @@ public class ClueInteract : MonoBehaviour
     public void OnClickAction()
     {
         if (ClueDetailPopup.Instance != null && ClueDetailPopup.Instance.IsBusy) return;
-        if (clueData == null)
+        if (PointClickDialogueManager.Instance != null && PointClickDialogueManager.Instance.IsBusy) return;
         {
             // 같은 단서를 가진 다른 오브젝트에서 이미 획득했다면 이 오브젝트도 조사한 상태로 처리
             if (InventoryManager.Instance != null &&
@@ -33,8 +33,6 @@ public class ClueInteract : MonoBehaviour
                 isFirstClickDone = true;
                 isUnlocked = true;
             }
-            return;
-        }
 
         // 조건부 상호작용
         if (clueData.requiresItem &&
@@ -118,6 +116,7 @@ public class ClueInteract : MonoBehaviour
             );
         }
     }
+}
 
     private void ShowPopupThenDialogue(System.Action dialogueAction)
     {
