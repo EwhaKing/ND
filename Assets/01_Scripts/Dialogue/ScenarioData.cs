@@ -55,7 +55,8 @@ public enum ChoiceActionType
     NextStep,
     ReactionThenNext,
     LoadScene,
-    JumpToStep
+    JumpToStep,
+    GoToStep
 }
 
 /// <summary>
@@ -121,6 +122,9 @@ public class ChoiceData
 
     public string targetScene;
     public int targetStepIndex;
+
+    [Tooltip("actionType = GoToStep 일 때 이동할 진행 단계")]
+    public GameFlowStep targetFlowStep;   
 }
 
 /// <summary>

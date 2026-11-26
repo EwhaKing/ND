@@ -268,6 +268,14 @@ public class ScenarioDataEditor : Editor
                 choice.targetScene
                 );
             break;
+            
+            case ChoiceActionType.GoToStep:
+                choice.targetFlowStep = (GameFlowStep)EditorGUILayout.EnumPopup(
+                "Target Flow Step",
+                choice.targetFlowStep
+                );
+                DrawReactionSteps(choice);   // 이동 전 반응 대사
+            break;
 }
 
             if (GUILayout.Button("Del"))
