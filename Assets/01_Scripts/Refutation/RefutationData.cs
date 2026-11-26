@@ -44,4 +44,8 @@ public class RefutationData : ScriptableObject
 
     [Header("2. 연출 순서 조립")]
     public List<RefutationStep> steps = new();
+
+    [Header("3. 논파 실패 처리")]
+    [Tooltip("목숨을 모두 잃었을 때 재생할 대화 그룹 ID (\"유스티티아: 그만.\" …)\n비워두면 대사 없이 바로 재도전")]
+    public string failDialogueGroupId;
 }

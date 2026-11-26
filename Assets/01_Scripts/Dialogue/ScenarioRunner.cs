@@ -452,7 +452,23 @@ public class ScenarioRunner : MonoBehaviour
                 currentStepIndex = choice.targetStepIndex - 1; // for문 증감(++)을 고려해 -1 처리
                 jumpRequested = true;
                 break;
+            case ChoiceActionType.GoToStep:
+                yield return ExecuteReactionSteps(choice.reactionSteps); // 예: <심판 1-1> 대사 후 이동
+                GoToFlowStep(choice.targetFlowStep);
+                break;
         }
+    }
+    
+    private void GoToFlowStep(GameFlowStep targetStep)
+    {
+        if (GameProgressManager.Instance == null)
+        {
+            Debug.LogError("GameProgressManager가 없습니다.");
+            return;
+        }
+
+        sceneLoadRequested = true;   // 시나리오 루프 정지
+        GameProgressManager.Instance.GoToStep(targetStep);
     }
 
     /// <summary>

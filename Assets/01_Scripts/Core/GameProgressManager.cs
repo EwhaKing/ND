@@ -55,6 +55,7 @@ public class GameProgressManager : MonoBehaviour
     [SerializeField] private string lobbySceneName = "LobbyScene";
     [SerializeField] private string chatSceneName = "ChatScene";
     [SerializeField] private string findSceneName = "FindScene";
+    [SerializeField] private string findRoomSceneName = "FindScene_Room";
     [SerializeField] private string refutationSceneName = "RefutationScene";
     [SerializeField] private string judgeSceneName = "JudgeScene";
     [SerializeField] private string miniGameSceneName = "MiniGameScene";
@@ -88,7 +89,145 @@ public class GameProgressManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
+        BuildFlowTable();
         LoadProgress();
+    }
+    
+    // ───────────── 진행 흐름표 ─────────────
+
+    /// scene    : 이 단계가 실행되는 씬
+    /// next     : 성공 시 다음 단계 (None = 로비로 복귀)
+    /// failNext : 실패 시 다음 단계 (None = 같은 단계 재시작)
+    private struct FlowNode
+    {
+        public string scene;
+        public GameFlowStep next;
+        public GameFlowStep failNext;
+
+        public FlowNode(string scene, GameFlowStep next, GameFlowStep failNext = GameFlowStep.None)
+        {
+            this.scene = scene;
+            this.next = next;
+            this.failNext = failNext;
+        }
+    }
+
+    private readonly Dictionary<GameFlowStep, FlowNode> flowTable = new();
+
+    /// 기획 문서 기준 진행 순서. 흐름을 바꿀 때는 여기만 수정한다.
+    private void BuildFlowTable()
+    {
+        flowTable.Clear();
+
+        // 챕터0 / 챕터1 프롤로그
+        flowTable[GameFlowStep.PrologueDialogue] =
+            new FlowNode(chatSceneName, GameFlowStep.Chapter1PrologueDialogue);
+        flowTable[GameFlowStep.Chapter1PrologueDialogue] =
+            new FlowNode(chatSceneName, GameFlowStep.InvestigationRoof);
+
+        // 스테이지1 탐색
+        flowTable[GameFlowStep.InvestigationRoof] =
+            new FlowNode(findSceneName, GameFlowStep.InvestigationGround);
+        flowTable[GameFlowStep.InvestigationGround] =
+            new FlowNode(findSceneName, GameFlowStep.Chapter1Stage1Dialogue);
+
+        // <Ch1-1-a> 심판장. 선택지로 분기 (심판한다 → Judgment / 더 파고든다 → Refutation)
+        flowTable[GameFlowStep.Chapter1Stage1Dialogue] =
+            new FlowNode(chatSceneName, GameFlowStep.Refutation);
+
+        // 심판 후 Chapter2 예정 → 지금은 로비
+        flowTable[GameFlowStep.Judgment] =
+            new FlowNode(judgeSceneName, GameFlowStep.None);
+
+        // 논파 1-1 (실패는 RefutationRunner가 씬 안에서 재도전)
+        flowTable[GameFlowStep.Refutation] =
+            new FlowNode(refutationSceneName, GameFlowStep.Chapter1Stage1Refutation1SuccessDialogue);
+
+        // <Ch1-1-b> → 스마트폰 미니게임
+        flowTable[GameFlowStep.Chapter1Stage1Refutation1SuccessDialogue] =
+            new FlowNode(chatSceneName, GameFlowStep.MiniGame);
+        flowTable[GameFlowStep.MiniGame] =
+            new FlowNode(miniGameSceneName,
+                GameFlowStep.Chapter1Stage1ConclusionSDialogue,
+                GameFlowStep.Chapter1Stage1ConclutionFDialogue);
+
+        // 미니게임 성공 대사 → 스테이지2 / 실패 대사 → 미니게임 재도전
+        flowTable[GameFlowStep.Chapter1Stage1ConclusionSDialogue] =
+            new FlowNode(chatSceneName, GameFlowStep.Chapter1Stage2Dialogue);
+        flowTable[GameFlowStep.Chapter1Stage1ConclutionFDialogue] =
+            new FlowNode(chatSceneName, GameFlowStep.MiniGame);
+
+        // 스테이지2: <Ch1-2-a> → 방 탐색 → 논파 2-1 → <Ch1-2-b>
+        flowTable[GameFlowStep.Chapter1Stage2Dialogue] =
+            new FlowNode(chatSceneName, GameFlowStep.Chapter1Stage2InvestigationRoom);
+        flowTable[GameFlowStep.Chapter1Stage2InvestigationRoom] =
+            new FlowNode(findSceneName, GameFlowStep.Chapter1Stage2Refutation);
+        flowTable[GameFlowStep.Chapter1Stage2Refutation] =
+            new FlowNode(refutationSceneName, GameFlowStep.Chapter1Stage2RefutationSuccessDialogue);
+
+        // Stage3 미정 → 지금은 로비
+        flowTable[GameFlowStep.Chapter1Stage2RefutationSuccessDialogue] =
+            new FlowNode(chatSceneName, GameFlowStep.None);
+
+        // 예전 세이브 호환용
+        flowTable[GameFlowStep.Stage2Intro] =
+            new FlowNode(chatSceneName, GameFlowStep.Chapter1Stage2InvestigationRoom);
+    }
+
+    /// 지정한 단계로 이동. None이면 로비로.
+    public void GoToStep(GameFlowStep step)
+    {
+        if (step == GameFlowStep.None)
+        {
+            ReturnToLobby();
+            return;
+        }
+
+        if (!flowTable.TryGetValue(step, out FlowNode node))
+        {
+            Debug.LogError($"[GameProgressManager] 흐름표에 없는 단계입니다: {step}");
+            return;
+        }
+
+        Debug.Log($"[GameProgressManager] {currentStep} → {step} ({node.scene})");
+
+        currentStep = step;
+        SceneManager.LoadScene(node.scene);
+    }
+
+    /// 현재 단계 성공 → 다음 단계
+    public void GoNext()
+    {
+        if (!flowTable.TryGetValue(currentStep, out FlowNode node))
+        {
+            Debug.LogError($"[GameProgressManager] 다음 단계가 정의되지 않았습니다: {currentStep}");
+            return;
+        }
+
+        GoToStep(node.next);
+    }
+
+    /// 현재 단계 실패 → 실패 분기, 없으면 같은 단계 재시작
+    public void GoFail()
+    {
+        if (flowTable.TryGetValue(currentStep, out FlowNode node) &&
+            node.failNext != GameFlowStep.None)
+        {
+            GoToStep(node.failNext);
+            return;
+        }
+
+        GoToStep(currentStep);
+    }
+
+    /// 로비로 복귀 (단서/판결 결과는 유지)
+    public void ReturnToLobby()
+    {
+        Debug.Log("[GameProgressManager] 로비로 복귀");
+
+        currentStep = GameFlowStep.None;
+        pendingResumeStepIndex = -1;
+        SceneManager.LoadScene(lobbySceneName);
     }
 
     /// <summary>
@@ -145,52 +284,6 @@ public class GameProgressManager : MonoBehaviour
         SceneManager.LoadScene(chatSceneName);
     }
 
-    public void GoNext()
-    {
-        switch (currentStep)
-        {
-            case GameFlowStep.PrologueDialogue:
-                currentStep = GameFlowStep.Chapter1PrologueDialogue;
-                SceneManager.LoadScene(chatSceneName);
-                break;
-
-            case GameFlowStep.Chapter1PrologueDialogue:
-                currentStep = GameFlowStep.InvestigationRoof;
-                SceneManager.LoadScene(findSceneName);
-                break;
-
-            case GameFlowStep.InvestigationRoof:
-                currentStep = GameFlowStep.InvestigationGround;
-                SceneManager.LoadScene(findSceneName);
-                break;
-
-            case GameFlowStep.InvestigationGround:
-                currentStep = GameFlowStep.Chapter1Stage1Dialogue;
-
-                SceneManager.LoadScene(chatSceneName);
-                break;
-
-            case GameFlowStep.Chapter1Stage1Dialogue:
-                currentStep = GameFlowStep.Refutation;
-
-                SceneManager.LoadScene(refutationSceneName);
-                break;
-
-            case GameFlowStep.Chapter1Stage1Refutation1SuccessDialogue:
-                currentStep = GameFlowStep.MiniGame;
-
-                SceneManager.LoadScene(miniGameSceneName);
-                break;
-
-            case GameFlowStep.Chapter1Stage1ConclusionSDialogue:
-                currentStep = GameFlowStep.Chapter1Stage2Dialogue;
-                SceneManager.LoadScene(chatSceneName);
-                break;
-
-                // 나머지...
-        }
-    }
-
     public void OnDialogueFinished()
     {
         GoNext();
@@ -201,34 +294,25 @@ public class GameProgressManager : MonoBehaviour
         GoNext();
     }
 
+    // 실패는 RefutationRunner가 씬 안에서 재도전하므로, 여기로 실패가 오면 같은 논파를 다시 시작
     public void OnRefutationFinished(bool isSuccess)
     {
-        if (isSuccess)
-        {
-            currentStep = GameFlowStep.Chapter1Stage1Refutation1SuccessDialogue;
-            SceneManager.LoadScene(chatSceneName);
-        }
-        else
-        {
-            currentStep = GameFlowStep.Judgment;
-            SceneManager.LoadScene(judgeSceneName);
-        }
+        if (isSuccess) GoNext();
+        else GoFail();
     }
 
+    // 심판 종료 → Chapter2 연결 전까지는 로비
     public void OnJudgmentFinished(JudgmentVerdict verdict)
     {
         FinalVerdict = verdict;
-
         Debug.Log($"최종 심판 결과: {verdict}");
+        GoNext();
+    }
 
-        currentStep = GameFlowStep.Stage2Intro;
-        SceneManager.LoadScene(chatSceneName);
-    } //스테이지1 마지막에 심판이 없는데 왜 심판에서 스테이지2로 이어지는가?
-
+    // MiniGameNext(LoadScene 버튼)에서 호출 = 미니게임 성공과 동일
     public void OnMiniGameCleared()
     {
-        currentStep = GameFlowStep.Stage2Intro;
-        SceneManager.LoadScene(chatSceneName);
+        MiniGame1Success();
     }
 
     public void RegisterClue(ClueData clueData)
@@ -301,37 +385,25 @@ public class GameProgressManager : MonoBehaviour
     /// </summary>
     public bool TryAdvanceDialogueStep()
     {
-        switch (currentStep)
-        {
-            case GameFlowStep.PrologueDialogue:
-                currentStep = GameFlowStep.Chapter1PrologueDialogue;
-                return true;
+        // 다음 단계도 대화 씬이면 씬을 다시 로드하지 않고 단계만 바꾼다.
+        if (!flowTable.TryGetValue(currentStep, out FlowNode node)) return false;
+        if (node.next == GameFlowStep.None) return false;
+        if (!flowTable.TryGetValue(node.next, out FlowNode nextNode)) return false;
+        if (node.scene != chatSceneName || nextNode.scene != chatSceneName) return false;
 
-            case GameFlowStep.Chapter1Stage1ConclusionSDialogue:
-                currentStep = GameFlowStep.Chapter1Stage2Dialogue;
-                return true;
-            /*case GameFlowStep.Chapter1PrologueDialogue:
-                currentStep =
-                    GameFlowStep.InvestigationRoof;
-                return true;*/
-
-            // Stage2(->챕터1프롤로그) 다음은 조사씬이므로
-            // 여기서 CurrentStep을 바꾸지 않는다.
-            default:
-                return false;
-        }
+        currentStep = node.next;
+        return true;
     }
 
+    // MiniGameScene 버튼에서 호출 (단독 테스트 때도 동작하도록 목적지를 직접 지정)
     public void MiniGame1Success()
     {
-        currentStep = GameFlowStep.Chapter1Stage1ConclusionSDialogue;
-        SceneManager.LoadScene(chatSceneName);
+        GoToStep(GameFlowStep.Chapter1Stage1ConclusionSDialogue);
     }
 
     public void MiniGame1Fail()
     {
-        currentStep = GameFlowStep.Chapter1Stage1ConclutionFDialogue;
-        SceneManager.LoadScene(chatSceneName);
+        GoToStep(GameFlowStep.Chapter1Stage1ConclutionFDialogue);
     }
 
 
@@ -393,35 +465,7 @@ public class GameProgressManager : MonoBehaviour
     // CurrentStep을 통해 이동해야 할 적절한 Target Scene 이름을 찾아주는 함수
     public string GetTargetSceneByStep(GameFlowStep step)
     {
-        switch (step)
-        {
-            case GameFlowStep.PrologueDialogue:
-            case GameFlowStep.Chapter1PrologueDialogue:
-            case GameFlowStep.Chapter1Stage1Dialogue:
-            case GameFlowStep.Chapter1Stage1Refutation1SuccessDialogue:
-            case GameFlowStep.Chapter1Stage1ConclusionSDialogue:
-            case GameFlowStep.Chapter1Stage1ConclutionFDialogue:
-            case GameFlowStep.Chapter1Stage2Dialogue:
-            case GameFlowStep.Chapter1Stage2RefutationSuccessDialogue:
-            case GameFlowStep.Stage2Intro:
-                return chatSceneName; // "ChatScene"
-
-            case GameFlowStep.InvestigationRoof:
-            case GameFlowStep.InvestigationGround:
-                return findSceneName; // "FindScene"
-
-            case GameFlowStep.Refutation:
-                return refutationSceneName; // "RefutationScene"
-
-            case GameFlowStep.Judgment:
-                return judgeSceneName; // "JudgeScene"
-
-            case GameFlowStep.MiniGame:
-                return miniGameSceneName; // "MiniGameScene"
-
-            default:
-                return chatSceneName;
-        }
+        return flowTable.TryGetValue(step, out FlowNode node) ? node.scene : chatSceneName;
     }
 
 
@@ -468,6 +512,13 @@ public class GameProgressManager : MonoBehaviour
                 return "챕터 1 - 심판";
             case GameFlowStep.MiniGame:
                 return "챕터 1 - 미니게임";
+            case GameFlowStep.Chapter1Stage2Dialogue:
+            case GameFlowStep.Chapter1Stage2RefutationSuccessDialogue:
+                return "챕터 1 - 스테이지 2";
+            case GameFlowStep.Chapter1Stage2InvestigationRoom:
+                return "챕터 1 - 유정의 방";
+            case GameFlowStep.Chapter1Stage2Refutation:
+                return "챕터 1 - 스테이지 2 논파";
             case GameFlowStep.None:
                 return "프롤로그";
             default:
@@ -526,25 +577,28 @@ public class GameProgressManager : MonoBehaviour
 }
 
 
+// ⚠ Unity는 enum을 숫자로 저장한다. 기존 번호는 바꾸지 말고, 새 단계는 맨 뒤에 새 번호로 추가할 것.
 public enum GameFlowStep
 {
-    None,
+    None = 0,
 
-    PrologueDialogue,
-    Chapter1PrologueDialogue,
-    Chapter1Stage1Dialogue, 
-    Chapter1Stage1Refutation1SuccessDialogue,
-    Chapter1Stage1ConclusionSDialogue,
-    Chapter1Stage1ConclutionFDialogue,
+    PrologueDialogue = 1,                         // 챕터0 프롤로그
+    Chapter1PrologueDialogue = 2,                 // 챕터1 프롤로그
+    Chapter1Stage1Dialogue = 3,                   // <Ch1-1-a> 심판장 + 선택지
+    Chapter1Stage1Refutation1SuccessDialogue = 4, // <Ch1-1-b>
+    Chapter1Stage1ConclusionSDialogue = 5,        // 스마트폰 최종 논파 성공
+    Chapter1Stage1ConclutionFDialogue = 6,        // 논파 실패 공통 스크립트
+    Chapter1Stage2Dialogue = 7,                   // <Ch1-2-a>
+    Chapter1Stage2RefutationSuccessDialogue = 8,  // <Ch1-2-b>
 
-    Chapter1Stage2Dialogue,
-    Chapter1Stage2RefutationSuccessDialogue,
+    InvestigationRoof = 9,
+    InvestigationGround = 10,
+    Refutation = 11,                              // 논파 1-1
+    Judgment = 12,
+    MiniGame = 13,                                // 스마트폰 미니게임
+    Stage2Intro = 14,                             // (사용 안 함, 호환용)
 
-    InvestigationRoof,
-    InvestigationGround,
-    //스테이지 증가함에따라 논파, 심판, 미니게임도 늘어남
-    Refutation,
-    Judgment,
-    MiniGame,
-    Stage2Intro
+    // ── 새로 추가 ──
+    Chapter1Stage2InvestigationRoom = 15,         // 유정의 방 탐색
+    Chapter1Stage2Refutation = 16,                // 논파 2-1
 }

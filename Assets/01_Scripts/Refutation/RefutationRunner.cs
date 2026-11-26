@@ -125,7 +125,7 @@ public class RefutationRunner : MonoBehaviour
                     refutationManager.StartRefutation(
                         step.testimonyIds,
                         onSuccess: GoNextStep,
-                        onFail: () => FinishStage(false)
+                        onFail: OnRefutationGameFailed
                     );
                 }
                 else
@@ -170,7 +170,7 @@ public class RefutationRunner : MonoBehaviour
             dialogueManager.ShowDialogueUI();
             
             // 대사를 한 줄씩 순차적으로 재생하며 스탠딩 강조를 제어합니다.
-            PlayDialogueLine(rawDataList, 0);
+            PlayDialogueLine(rawDataList, 0, GoNextStep);
         }
         else
         {
@@ -179,12 +179,12 @@ public class RefutationRunner : MonoBehaviour
     }
 
     // 대사를 한 줄씩 처리하는 재귀/순차 메서드
-    private void PlayDialogueLine(IList<RefutationDatabase.RefutationEntry> rawDataList, int index)
+    private void PlayDialogueLine(IList<RefutationDatabase.RefutationEntry> rawDataList, int index, Action onComplete)
     {
         if (index >= rawDataList.Count)
         {
             // 모든 대사가 끝나면 다음 스텝으로 진행
-            GoNextStep();
+            onComplete?.Invoke();
             return;
         }
 
@@ -207,13 +207,38 @@ public class RefutationRunner : MonoBehaviour
         if (dialogueManager != null)
         {
             dialogueManager.ShowSingleLine(item.character, item.dialogue, () => {
-                PlayDialogueLine(rawDataList, index + 1);
+                PlayDialogueLine(rawDataList, index + 1, onComplete);
             });
         }
         else
         {
-            GoNextStep();
+            onComplete?.Invoke();
         }
+    }
+
+    /// 논파 실패 (목숨 소진): 실패 공통 스크립트 → 현재 논파 시작 지점에서 재도전
+    /// (획득한 단서와 앞선 논파 진행은 유지)
+    private void OnRefutationGameFailed()
+    {
+        Debug.Log($"[RefutationRunner] 논파 실패 → {currentStepIndex}번 Step부터 재도전");
+
+        var failLines = (refutationDatabase != null && currentStageData != null)
+            ? refutationDatabase.GetDialogueGroup(currentStageData.failDialogueGroupId)
+            : null;
+
+        // currentStepIndex는 그대로 → 실패한 논파 Step을 다시 실행
+        if (failLines == null || failLines.Count == 0 || dialogueManager == null)
+        {
+            ExecuteCurrentStep();
+            return;
+        }
+
+        if (generalDialogueGroup != null) generalDialogueGroup.SetActive(true);
+        if (refutationUIGroup != null) refutationUIGroup.SetActive(false);
+
+        dialogueManager.gameObject.SetActive(true);
+        dialogueManager.ShowDialogueUI();
+        PlayDialogueLine(failLines, 0, ExecuteCurrentStep);
     }
 
     private void FinishStage(bool isSuccess)

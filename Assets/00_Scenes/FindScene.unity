@@ -2583,6 +2583,7 @@ MonoBehaviour:
   stageRoot: {fileID: 129732238}
   chapter1RoofData: {fileID: 11400000, guid: b18597a2c859e2d4aad4118044d21501, type: 2}
   chapter1GroundData: {fileID: 11400000, guid: 4060732d2e51d1a4db32a2aeebf06fae, type: 2}
+  chapter1RoomData: {fileID: 11400000, guid: a2caf9bfa7f543a469f5863f4f11f320, type: 2}
 --- !u!4 &2061818695
 Transform:
   m_ObjectHideFlags: 0

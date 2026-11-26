@@ -21,6 +21,10 @@ public class InvestigationSceneController : MonoBehaviour
     [SerializeField]
     private InvestigationStageData chapter1GroundData;
 
+    [Tooltip("스테이지2 유정의 방 (FindScene_Room에서 연결)")]   // ← 추가
+    [SerializeField]
+    private InvestigationStageData chapter1RoomData;
+
     private GameObject currentStageObject;
 
     private void Start()
@@ -57,6 +61,9 @@ public class InvestigationSceneController : MonoBehaviour
 
             case GameFlowStep.InvestigationGround:
                 return chapter1GroundData;
+
+            case GameFlowStep.Chapter1Stage2InvestigationRoom:
+                return chapter1RoomData;
 
             default:
                 return null;

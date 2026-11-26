@@ -50,6 +50,9 @@ public class RefutationManager : MonoBehaviour
     private Action onSuccessCallback;
     private Action onFailCallback;
 
+    // 최초 목숨 수 (재도전 시 이 값으로 되돌림). -1 = 아직 기록 전
+    private int initialLife = -1;
+
     private void Awake()
     {
         if (evidenceSelectionPanel != null) evidenceSelectionPanel.SetActive(false);
@@ -102,6 +105,10 @@ public class RefutationManager : MonoBehaviour
         this.testimonyIdList = testimonies;
         this.onSuccessCallback = onSuccess;
         this.onFailCallback = onFail;
+
+        // 재도전 시 목숨 초기화 (비활성 오브젝트면 Awake 전일 수 있어서 여기서 기록)
+        if (initialLife < 0) initialLife = playerLife;
+        playerLife = initialLife;
 
         gameObject.SetActive(true);
         StartTestimony();
