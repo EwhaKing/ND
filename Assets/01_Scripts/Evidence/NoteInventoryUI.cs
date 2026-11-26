@@ -87,6 +87,13 @@ public class NoteInventoryUI : MonoBehaviour, IPointerClickHandler
         {
             CloseDetailPanel();
         }
+        // 대사가 시작되면 열려 있던 인벤토리를 강제로 닫는다
+        if (isOpen &&
+            PointClickDialogueManager.Instance != null &&
+            PointClickDialogueManager.Instance.IsShowing)
+        {
+            ForceCloseInventory();
+        }
     }
 
     // 클립보드(빈 곳)를 눌렀을 때: 닫혀 있으면 올라오게 함
@@ -96,6 +103,7 @@ public class NoteInventoryUI : MonoBehaviour, IPointerClickHandler
     }
     public void ToggleInventory()
     {
+        if (PointClickDialogueManager.Instance != null && PointClickDialogueManager.Instance.IsBusy) return;
         isOpen = !isOpen;
 
         if (isOpen)
@@ -109,6 +117,16 @@ public class NoteInventoryUI : MonoBehaviour, IPointerClickHandler
 
         if (moveCoroutine != null) StopCoroutine(moveCoroutine);
         moveCoroutine = StartCoroutine(AnimatePanel(isOpen));
+    }
+
+    private void ForceCloseInventory()
+    {
+        isOpen = false;
+        ClearSelections();
+        CloseDetailPanel();
+
+        if (moveCoroutine != null) StopCoroutine(moveCoroutine);
+        moveCoroutine = StartCoroutine(AnimatePanel(false));
     }
 
     public void RefreshInventorySlots()
@@ -277,8 +295,7 @@ public class NoteInventoryUI : MonoBehaviour, IPointerClickHandler
     //더블 클릭 시 ClueDetailPopup 팝업을 띄움
     public void OnSlotDoubleClicked(ClueData clue, ItemSlotUI slot)
     {
-        if (clue == null) return;
-
+        if (PointClickDialogueManager.Instance != null && PointClickDialogueManager.Instance.IsBusy) return;
         if (ClueDetailPopup.Instance != null)
         {
             ClueDetailPopup.Instance.ShowPopup(clue);

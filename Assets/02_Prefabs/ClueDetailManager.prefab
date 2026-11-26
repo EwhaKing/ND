@@ -35,8 +35,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 499.1317, y: 1175}
-  m_SizeDelta: {x: 92.3713, y: 87.9506}
+  m_AnchoredPosition: {x: 376.61133, y: 1021.2633}
+  m_SizeDelta: {x: 56.7773, y: 57.4733}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5114183838996456804
 CanvasRenderer:
@@ -119,7 +119,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 8777096159048152394}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 8820335476211642330}
+        m_TargetAssemblyTypeName: ClueDetailPopup, Assembly-CSharp
+        m_MethodName: ClosePopup
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &812887763083405250
 GameObject:
   m_ObjectHideFlags: 0
@@ -175,6 +187,8 @@ MonoBehaviour:
   clueNameText: {fileID: 5087780546937149327}
   clueDescText: {fileID: 6083375378240925148}
   popupSequence: {fileID: 3744075620939207061}
+  safetyUnlockTime: 2
+  readDelay: 0.5
 --- !u!1 &1353650215283942266
 GameObject:
   m_ObjectHideFlags: 0

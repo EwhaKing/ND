@@ -69,6 +69,10 @@ public class PointClickDialogueManager : MonoBehaviour
     private bool pendingInventoryRefresh = false; // 인벤토리 UI 갱신 여부 확인용 플래그
     public Action onDialogueClosedCallback = null; // 대화창이 닫힐 때 호출될 콜백
 
+    // 대화가 떠 있는 동안 true. 대화가 끝난 바로 그 프레임의 클릭까지 막는다
+    private int closedFrame = -1;
+    public bool IsShowing => dialoguePanel != null && dialoguePanel.activeSelf;
+    public bool IsBusy => IsShowing || Time.frameCount <= closedFrame;
     private void Awake()
     {
         if (Instance == null) Instance = this;
@@ -259,7 +263,7 @@ public class PointClickDialogueManager : MonoBehaviour
     private void FinishDialogue()
     {
         if (dialoguePanel != null) dialoguePanel.SetActive(false);
-
+        closedFrame = Time.frameCount;
         // 다음 대화를 위해 스탠딩/이름 표시 초기화
         ClearStage();
         ApplyName(string.Empty);
