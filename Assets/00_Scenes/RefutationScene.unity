@@ -1301,7 +1301,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RefutationManager
   generalDialogueGroup: {fileID: 256511341}
   refutationUIGroup: {fileID: 2026853939}
-  generalDialogueManager: {fileID: 0}
+  generalDialogueManager: {fileID: 1985311332}
   testimonyDialogueManager: {fileID: 2030691888}
   refutationDatabase: {fileID: 1068760404}
   testimonyIdList:
@@ -1345,7 +1345,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 96fde475e04be5940a73fc3a62526344, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RefutationRunner
-  dialogueManager: {fileID: 0}
+  dialogueManager: {fileID: 1985311332}
   refutationDatabase: {fileID: 1068760404}
   refutationManager: {fileID: 1068760403}
   standingController: {fileID: 1184371316}
@@ -2854,6 +2854,17 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1955824519}
   m_CullTransparentMesh: 1
+--- !u!114 &1985311332 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5763313055627847380, guid: 114dcadb72774004682ff4b9ba68ef75, type: 3}
+  m_PrefabInstance: {fileID: 864959304}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8cd51e67fc05a9d4f92c2b578ce50f50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueManager
 --- !u!1 &2026853939
 GameObject:
   m_ObjectHideFlags: 0
